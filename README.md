@@ -8,7 +8,7 @@ I have included several VB objects in the scripting environment, and am in the p
 
 ### DOM Objects
 
- * window - only alert(message) is currently implemented
+ * window - only alert, confirm, and prompt are currently implemented
 
 ### Visual Basic Objects
 
