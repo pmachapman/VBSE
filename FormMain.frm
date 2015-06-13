@@ -207,7 +207,7 @@ End Sub
 ' Form Query Unload Event Handler
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
 
-If TextChanged Then
+If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
     Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
         Case vbYes
             MenuFileSave_Click
@@ -285,7 +285,7 @@ End Sub
 ' Edit Menu Click Event Handler
 Private Sub MenuEdit_Click()
     ' Disable/Enable the menu items as required
-    MenuEditUndo.Enabled = UndoText <> ""
+    MenuEditUndo.Enabled = UndoText <> TextMain.Text
     MenuEditCut.Enabled = TextMain.SelLength > 0
     MenuEditCopy.Enabled = TextMain.SelLength > 0
     MenuEditPaste.Enabled = Clipboard.GetFormat(vbCFText) And Len(Clipboard.GetText()) > 0
@@ -325,6 +325,13 @@ Private Sub MenuEditPaste_Click()
     TextMain.SelText = Clipboard.GetText()
 End Sub
 
+' Edit -> Select All Menu Click Event Handler
+Private Sub MenuEditSelectAll_Click()
+    ' Select all text
+    TextMain.SelStart = 0
+    TextMain.SelLength = Len(TextMain.Text)
+End Sub
+
 ' Edit -> Undo Menu Click Event Handler
 Private Sub MenuEditUndo_Click()
     ' Store the redo text and position
@@ -352,7 +359,7 @@ End Sub
 ' File -> New Menu Click Event Handler
 Private Sub MenuFileNew_Click()
     ' Show the save prompt if the text has changed
-    If TextChanged Then
+    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
         Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
             Case vbYes
                 MenuFileSave_Click
@@ -375,7 +382,7 @@ End Sub
 ' File -> Open Menu Click Event Handler
 Private Sub MenuFileOpen_Click()
     ' Show the save prompt if the text has changed
-    If TextChanged Then
+    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
         Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, "Open")
             Case vbYes
                 MenuFileSave_Click
@@ -450,7 +457,7 @@ End Sub
 
 ' Help -> About Menu Click Event Handler
 Private Sub MenuHelpAbout_Click()
-    Call ShellAbout(Me.hwnd, "VBScript and JScript", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
+    Call ShellAbout(Me.hwnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
 End Sub
 
 ' Language -> JScript Menu Click Event Handler

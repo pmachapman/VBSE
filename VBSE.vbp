@@ -1,6 +1,6 @@
 Class=Window; Window.cls
-Form=FormMain.frm
 Module=ModuleMain; ModuleMain.bas
+Form=FormMain.frm
 Object={0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0; msscript.ocx
 Object={F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0; comdlg32.ocx
 ProjWinSize=90,830,194,128
@@ -15,7 +15,7 @@ StartMode=0
 Description="Very Basic Script Editor"
 VersionCompatible32="0"
 MajorVer=1
-MinorVer=0
+MinorVer=1
 RevisionVer=0
 AutoIncrementVer=0
 ServerSupportFiles=0

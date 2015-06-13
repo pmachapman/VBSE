@@ -9,6 +9,21 @@ Attribute VB_Exposed = True
 Option Explicit
 
 ' window.alert() implementation
-Public Sub alert(message As Variant)
-    MsgBox CStr(message), vbOKOnly, "Alert"
+Public Sub alert(Optional message As Variant)
+    If IsMissing(message) Then message = ""
+    MsgBox CStr(message), vbOKOnly + vbExclamation, "Alert"
 End Sub
+
+' window.confirm() implementation
+Public Function confirm(Optional message As Variant) As Boolean
+    If IsMissing(message) Then message = ""
+    confirm = MsgBox(CStr(message), vbOKCancel + vbQuestion, "Confirm") = vbOK
+End Function
+
+' window.prompt() implementation
+Public Function prompt(Optional message As Variant, Optional defaultText As Variant) As String
+    If IsMissing(message) Then message = ""
+    If IsMissing(defaultText) Then defaultText = ""
+    prompt = InputBox(CStr(message), "Prompt", CStr(defaultText))
+End Function
+
