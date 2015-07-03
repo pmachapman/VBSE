@@ -116,6 +116,8 @@ Private Sub TextOutput_KeyDown(KeyCode As Integer, Shift As Integer)
     ' Handle Ctrl+A shortcut, as the edit menu is hiddne
     If KeyCode = vbKeyA And Shift = vbCtrlMask Then
         MenuEditSelectAll_Click
+    ElseIf KeyCode = vbKeyMenu Then
+        TextOutput_MouseDown vbRightButton, Shift, 0, 0
     End If
 End Sub
 

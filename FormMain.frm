@@ -765,7 +765,9 @@ Private Sub TextMain_KeyDown(Index As Integer, KeyCode As Integer, Shift As Inte
     ' Update the status bar
     GetCursorCoordinates
     ' If selected text is being overwritten
-    If Shift = 0 And TextMain(Index).SelLength > 0 Then
+    If KeyCode = vbKeyMenu Then
+        TextMain_MouseDown Index, vbRightButton, Shift, 0, 0
+    ElseIf Shift = 0 And TextMain(Index).SelLength > 0 Then
         ' Store the undo value
         UndoStart = TextMain(Index).SelStart
         UndoLength = TextMain(Index).SelLength

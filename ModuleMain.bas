@@ -15,6 +15,9 @@ Public Const WM_USER = &H400
 Public Const EM_EXLINEFROMCHAR = &HC9
 Public Const EM_LINEINDEX = &HBB
 
+' Keycode Consants
+Public Const vbKeyMenu = &H5D
+
 ' Program Entrypoint
 Public Sub Main()
     ' Load the editor
