@@ -8,7 +8,7 @@ Begin VB.Form FormMain
    Height          =   3720
    Icon            =   "FormMain.frx":0000
    Left            =   1440
-   LinkTopic       =   "FormMain"
+   LinkTopic       =   "Main"
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   400
@@ -177,6 +177,9 @@ Begin VB.Form FormMain
    End
    Begin VB.Menu MenuView 
       Caption         =   "&View"
+      Begin VB.Menu MenuViewConsole 
+         Caption         =   "&Console"
+      End
       Begin VB.Menu MenuViewStatusBar 
          Caption         =   "&Status Bar"
       End
@@ -208,13 +211,13 @@ Dim UndoLength As Long
 ' Form Activate Event Handler
 Private Sub Form_Activate()
     ' Process the word wrap value
-    If MenuFormatWordWrap.Checked Then
+    If MenuFormatWordWrap.Checked And CurrentTextBox = 0 Then
         CurrentTextBox = 1
         Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(0).Text)
         Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(0).Text)
         TextMain(CurrentTextBox).SelStart = TextMain(0).SelStart
         TextMain(CurrentTextBox).SelLength = TextMain(0).SelLength
-    Else
+    ElseIf CurrentTextBox = 1 Then
         CurrentTextBox = 0
         Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(1).Text)
         Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(1).Text)
@@ -405,6 +408,7 @@ Private Sub InitialiseScripting()
     
     ' Add some web browser related objects
     ' Names are lowercase for JScript compatibility
+    ScriptMain.AddObject "console", FormConsole, True
     ScriptMain.AddObject "navigator", Navigator, True
     ScriptMain.AddObject "window", Window, True
 End Sub
@@ -421,7 +425,7 @@ End Sub
 
 ' Edit -> Copy Menu Click Event Handler
 Private Sub MenuEditCopy_Click()
-    Clipboard.Clear
+    Clipboard.clear
     Clipboard.SetText TextMain(CurrentTextBox).SelText
 End Sub
 
@@ -646,6 +650,15 @@ Private Sub MenuRunStart_Click()
     On Error Resume Next
     InitialiseScripting
     ScriptMain.AddCode TextMain(CurrentTextBox).Text
+End Sub
+' View -> Console Menu Click Event Handler
+Private Sub MenuViewConsole_Click()
+    MenuViewConsole.Checked = Not MenuViewConsole.Checked
+    If MenuViewConsole.Checked Then
+        FormConsole.Show
+    Else
+        FormConsole.Hide
+    End If
 End Sub
 
 ' View -> Status Bar Menu Click Event Handler
