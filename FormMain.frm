@@ -4,16 +4,33 @@ Begin VB.Form FormMain
    ClientHeight    =   2910
    ClientLeft      =   2385
    ClientTop       =   4845
-   ClientWidth     =   5520
+   ClientWidth     =   6000
    Height          =   3720
    Icon            =   "FormMain.frx":0000
    Left            =   2325
    LinkTopic       =   "FormMain"
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
-   ScaleWidth      =   368
+   ScaleWidth      =   400
    Top             =   4095
-   Width           =   5640
+   Width           =   6120
+   Begin VB.PictureBox PictureStatus 
+      Height          =   255
+      Left            =   0
+      ScaleHeight     =   195
+      ScaleWidth      =   3195
+      TabIndex        =   1
+      Top             =   2640
+      Width           =   3255
+      Begin VB.Label LabelStatus 
+         Alignment       =   1  'Right Justify
+         Height          =   255
+         Left            =   0
+         TabIndex        =   2
+         Top             =   0
+         Width           =   2775
+      End
+   End
    Begin VB.TextBox TextMain 
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
          Name            =   "Lucida Console"
@@ -131,6 +148,12 @@ Begin VB.Form FormMain
          Caption         =   "&Font..."
       End
    End
+   Begin VB.Menu MenuView 
+      Caption         =   "&View"
+      Begin VB.Menu MenuViewStatusBar 
+         Caption         =   "&Status Bar"
+      End
+   End
    Begin VB.Menu MenuHelp 
       Caption         =   "&Help"
       Begin VB.Menu MenuHelpAbout 
@@ -147,6 +170,7 @@ Option Explicit
 Dim Window As New Window
 ' Editor Variables
 Dim FilePath As String
+Dim RestoreStatusBar As Boolean
 Dim TextChanged As Boolean
 Dim UndoText As String
 Dim UndoStart As Long
@@ -156,10 +180,25 @@ Dim UndoLength As Long
 Private Sub Form_Activate()
     ' Process the word wrap value
     If MenuFormatWordWrap.Checked Then
-        Call ShowScrollBar(TextMain.hwnd, SB_HORZ, False)
+        Call ShowScrollBar(TextMain.hWnd, SB_HORZ, False)
     Else
-        Call ShowScrollBar(TextMain.hwnd, SB_BOTH, True)
+        Call ShowScrollBar(TextMain.hWnd, SB_BOTH, True)
     End If
+    ' Hide the status bar menu and status bar if word wrapped
+    If MenuFormatWordWrap.Checked Then
+        PictureStatus.Visible = False
+        RestoreStatusBar = MenuViewStatusBar.Checked
+        MenuViewStatusBar.Checked = False
+        MenuViewStatusBar.Enabled = False
+    ElseIf RestoreStatusBar Then
+        PictureStatus.Visible = True
+        MenuViewStatusBar.Checked = True
+        MenuViewStatusBar.Enabled = True
+    Else
+        MenuViewStatusBar.Enabled = True
+    End If
+    ' Resize the form elements
+    Form_Resize
 End Sub
 
 ' Form Load Event Handler
@@ -175,6 +214,7 @@ Private Sub Form_Load()
     Me.Height = CLng(GetSetting("Peter Chapman", "VBSE", "Height", Me.Height))
     Me.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "WindowState", Me.WindowState))
     MenuFormatWordWrap.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked))
+    MenuViewStatusBar.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked))
     Dim Language As String
     Language = CStr(GetSetting("Peter Chapman", "VBSE", "Language", "VBScript"))
     If Language = "Text" Then
@@ -206,27 +246,39 @@ End Sub
 
 ' Form Query Unload Event Handler
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
-
-If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
-    Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
-        Case vbYes
-            MenuFileSave_Click
-            ' If the save did not take place, cancel exiting
-            If TextChanged = True Then
+    ' See if there is something to save
+    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
+        Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
+            Case vbYes
+                MenuFileSave_Click
+                ' If the save did not take place, cancel exiting
+                If TextChanged = True Then
+                    Cancel = True
+                End If
+            Case vbCancel
                 Cancel = True
-            End If
-        Case vbCancel
-            Cancel = True
-    End Select
-End If
+        End Select
+    End If
 End Sub
 
 ' Form Resize Event
 Private Sub Form_Resize()
-    ' The text box fills the entire window
     On Error Resume Next
-    TextMain.Width = Me.ScaleWidth
-    TextMain.Height = Me.ScaleHeight
+    ' If we have the status bar showing
+    If MenuViewStatusBar.Checked Then
+        ' Position the status bar
+        PictureStatus.Top = Me.ScaleHeight - PictureStatus.Height
+        PictureStatus.Left = 0
+        PictureStatus.Width = Me.ScaleWidth
+        LabelStatus.Width = PictureStatus.ScaleWidth - 100
+        ' The text box fills the entire window, less the status bar
+        TextMain.Width = Me.ScaleWidth
+        TextMain.Height = Me.ScaleHeight - PictureStatus.Height
+    Else
+        ' The text box fills the entire window
+        TextMain.Width = Me.ScaleWidth
+        TextMain.Height = Me.ScaleHeight
+    End If
 End Sub
 
 ' Form Unload Event Handler
@@ -239,6 +291,7 @@ Private Sub Form_Unload(Cancel As Integer)
     SaveSetting "Peter Chapman", "VBSE", "Width", Me.Width
     SaveSetting "Peter Chapman", "VBSE", "Height", Me.Height
     SaveSetting "Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked
+    SaveSetting "Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked
     If MenuLanguageText.Checked Then
         SaveSetting "Peter Chapman", "VBSE", "Language", "Text"
     ElseIf MenuLanguageJScript.Checked Then
@@ -255,6 +308,24 @@ Private Sub Form_Unload(Cancel As Integer)
     ' Exit the program
     End
 End Sub
+
+' Gets the cursor co-ordinates, and updates the status bar
+Private Sub GetCursorCoordinates()
+    ' Make sure word wrap is off
+    If Not MenuFormatWordWrap.Checked Then
+        ' Declare variables
+        Dim LineNumber As Long
+        Dim Column As Long
+        Dim Start As Long
+        ' Get the co-ordinates
+        Start = TextMain.SelStart
+        LineNumber = SendMessage(TextMain.hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
+        Column = SendMessage(TextMain.hWnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
+        ' Update the status bar
+        LabelStatus.Caption = "Line " + CStr(LineNumber + 1) & ", Column " & CStr(Start - Column + 1)
+    End If
+End Sub
+
 
 ' Gets the file name from a path
 Function GetFileNameFromPath(ByVal Path As String) As String
@@ -451,13 +522,13 @@ End Sub
 Private Sub MenuFormatWordWrap_Click()
     ' Update the menu
     MenuFormatWordWrap.Checked = Not MenuFormatWordWrap.Checked
-    ' Update the windows
+    ' Update the window
     Form_Activate
 End Sub
 
 ' Help -> About Menu Click Event Handler
 Private Sub MenuHelpAbout_Click()
-    Call ShellAbout(Me.hwnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
+    Call ShellAbout(Me.hWnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
 End Sub
 
 ' Language -> JScript Menu Click Event Handler
@@ -509,8 +580,8 @@ Public Function OpenFile(FileName As String) As Boolean
         Close F
         ' Put it into Text Box
         ' Only works properly under NT\2000\XP
-        nRet = SendMessage(TextMain.hwnd, WM_SETTEXT, 0&, ByVal S)
-        nRet = SetWindowText(TextMain.hwnd, S)
+        nRet = SendMessage(TextMain.hWnd, WM_SETTEXT, 0&, ByVal S)
+        nRet = SetWindowText(TextMain.hWnd, S)
         OpenFile = True
         ' Update the file path
         FilePath = FileName
@@ -574,19 +645,30 @@ Private Sub SaveFile(SaveAs As Boolean)
 CancelSave:
 End Sub
 
+Private Sub MenuViewStatusBar_Click()
+    MenuViewStatusBar.Checked = Not MenuViewStatusBar.Checked
+    RestoreStatusBar = MenuViewStatusBar.Checked
+    PictureStatus.Visible = MenuViewStatusBar.Checked
+    Form_Resize
+End Sub
+
 ' Scripting Error Handler
 Private Sub ScriptMain_Error()
-    MsgBox "Error " & ScriptMain.Error.Number & ": " & ScriptMain.Error.Description & vbCrLf & "On Line: " & ScriptMain.Error.Line & vbCrLf & vbCrLf & ScriptMain.Error.Text, vbCritical, "Script Error"
+    MsgBox "Error " & ScriptMain.Error.Number & ": " & ScriptMain.Error.Description & vbCrLf & "On Line: " & ScriptMain.Error.line & vbCrLf & vbCrLf & ScriptMain.Error.Text, vbCritical, "Script Error"
 End Sub
 
 ' Textbox Change Event Handler
 Private Sub TextMain_Change()
     ' Update the changed flag
     TextChanged = True
+    ' Update the status bar
+    GetCursorCoordinates
 End Sub
 
 ' Textbox Key Down Event Handler
 Private Sub TextMain_KeyDown(KeyCode As Integer, Shift As Integer)
+    ' Update the status bar
+    GetCursorCoordinates
     ' If selected text is being overwritten
     If Shift = 0 And TextMain.SelLength > 0 Then
         ' Store the undo value
@@ -598,6 +680,9 @@ End Sub
 
 ' Textbox Mouse Down Event Handler
 Private Sub TextMain_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    ' Update the status bar
+    GetCursorCoordinates
+    ' If the right mouse button
     If Button = vbRightButton Then
         ' Disable the textbox
         TextMain.Enabled = False

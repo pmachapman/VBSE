@@ -3,19 +3,24 @@ Attribute VB_Name = "ModuleMain"
 Option Explicit
 
 ' Scroll Bar API calls and constants
-Public Declare Function ShowScrollBar Lib "user32" (ByVal hwnd As Long, ByVal wBar As Long, ByVal bShow As Long) As Long
+Public Declare Function ShowScrollBar Lib "user32" (ByVal hWnd As Long, ByVal wBar As Long, ByVal bShow As Long) As Long
 Public Const SB_HORZ = 0
 Public Const SB_VERT = 1
 Public Const SB_CTL = 2
 Public Const SB_BOTH = 3
 
 ' File Open API calls and constants
-Public Declare Function SetWindowText Lib "user32" Alias "SetWindowTextA" (ByVal hwnd As Long, ByVal lpString As String) As Long
-Public Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Public Declare Function SetWindowText Lib "user32" Alias "SetWindowTextA" (ByVal hWnd As Long, ByVal lpString As String) As Long
+Public Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
 Public Const WM_SETTEXT = &HC
 
 ' About Dialog API calls
-Public Declare Function ShellAbout Lib "shell32.dll" Alias "ShellAboutA" (ByVal hwnd As Long, ByVal szApp As String, ByVal szOtherStuff As String, ByVal hIcon As Long) As Long
+Public Declare Function ShellAbout Lib "shell32.dll" Alias "ShellAboutA" (ByVal hWnd As Long, ByVal szApp As String, ByVal szOtherStuff As String, ByVal hIcon As Long) As Long
+
+' Cursor Position constants
+Public Const WM_USER = &H400
+Public Const EM_EXLINEFROMCHAR = &HC9
+Public Const EM_LINEINDEX = &HBB
 
 ' Program Entrypoint
 Public Sub Main()
