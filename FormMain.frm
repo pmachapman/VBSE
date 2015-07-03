@@ -194,6 +194,7 @@ Attribute VB_Exposed = False
 ' Require Variable Declaration
 Option Explicit
 ' Scripting Objects
+Dim Navigator As New Navigator
 Dim Window As New Window
 ' Editor Variables
 Dim CurrentTextBox As Integer
@@ -255,11 +256,11 @@ Private Sub Form_Load()
     Me.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "WindowState", Me.WindowState))
     MenuFormatWordWrap.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked))
     MenuViewStatusBar.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked))
-    Dim Language As String
-    Language = CStr(GetSetting("Peter Chapman", "VBSE", "Language", "VBScript"))
-    If Language = "Text" Then
+    Dim language As String
+    language = CStr(GetSetting("Peter Chapman", "VBSE", "Language", "VBScript"))
+    If language = "Text" Then
         MenuLanguageText_Click
-    ElseIf Language = "JScript" Then
+    ElseIf language = "JScript" Then
         MenuLanguageJScript_Click
     Else
         MenuLanguageVBScript_Click
@@ -404,6 +405,7 @@ Private Sub InitialiseScripting()
     
     ' Add some web browser related objects
     ' Names are lowercase for JScript compatibility
+    ScriptMain.AddObject "navigator", Navigator, True
     ScriptMain.AddObject "window", Window, True
 End Sub
 
@@ -617,7 +619,7 @@ Private Sub MenuLanguageJScript_Click()
     MenuLanguageText.Checked = False
     MenuLanguageVBScript.Checked = False
     MenuRun.Enabled = True
-    ScriptMain.Language = "JScript"
+    ScriptMain.language = "JScript"
     InitialiseScripting
 End Sub
 
@@ -635,7 +637,7 @@ Private Sub MenuLanguageVBScript_Click()
     MenuLanguageText.Checked = False
     MenuLanguageVBScript.Checked = True
     MenuRun.Enabled = True
-    ScriptMain.Language = "VBScript"
+    ScriptMain.language = "VBScript"
     InitialiseScripting
 End Sub
 
