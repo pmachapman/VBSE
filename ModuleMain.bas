@@ -2,13 +2,6 @@ Attribute VB_Name = "ModuleMain"
 ' Require Variable Declaration
 Option Explicit
 
-' Scroll Bar API calls and constants
-Public Declare Function ShowScrollBar Lib "user32" (ByVal hWnd As Long, ByVal wBar As Long, ByVal bShow As Long) As Long
-Public Const SB_HORZ = 0
-Public Const SB_VERT = 1
-Public Const SB_CTL = 2
-Public Const SB_BOTH = 3
-
 ' File Open API calls and constants
 Public Declare Function SetWindowText Lib "user32" Alias "SetWindowTextA" (ByVal hWnd As Long, ByVal lpString As String) As Long
 Public Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long

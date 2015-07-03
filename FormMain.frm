@@ -14,6 +14,25 @@ Begin VB.Form FormMain
    ScaleWidth      =   400
    Top             =   1575
    Width           =   6120
+   Begin VB.TextBox TextMain 
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "Lucida Console"
+         Size            =   9.75
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   2055
+      Index           =   1
+      Left            =   480
+      MultiLine       =   -1  'True
+      ScrollBars      =   2  'Vertical
+      TabIndex        =   3
+      Top             =   240
+      Width           =   3855
+   End
    Begin VB.PictureBox PictureStatus 
       Height          =   255
       Left            =   0
@@ -42,6 +61,7 @@ Begin VB.Form FormMain
          Strikethrough   =   0   'False
       EndProperty
       Height          =   2055
+      Index           =   0
       Left            =   0
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Both
@@ -50,14 +70,14 @@ Begin VB.Form FormMain
       Width           =   3855
    End
    Begin MSComDlg.CommonDialog CommonDialogMain 
-      Left            =   4320
+      Left            =   4560
       Top             =   960
       _ExtentX        =   847
       _ExtentY        =   847
       _Version        =   393216
    End
    Begin MSScriptControlCtl.ScriptControl ScriptMain 
-      Left            =   3960
+      Left            =   4560
       Top             =   0
       _ExtentX        =   1005
       _ExtentY        =   1005
@@ -176,6 +196,7 @@ Option Explicit
 ' Scripting Objects
 Dim Window As New Window
 ' Editor Variables
+Dim CurrentTextBox As Integer
 Dim FilePath As String
 Dim RestoreStatusBar As Boolean
 Dim TextChanged As Boolean
@@ -187,10 +208,20 @@ Dim UndoLength As Long
 Private Sub Form_Activate()
     ' Process the word wrap value
     If MenuFormatWordWrap.Checked Then
-        Call ShowScrollBar(TextMain.hWnd, SB_HORZ, False)
+        CurrentTextBox = 1
+        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(0).Text)
+        Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(0).Text)
+        TextMain(CurrentTextBox).SelStart = TextMain(0).SelStart
+        TextMain(CurrentTextBox).SelLength = TextMain(0).SelLength
     Else
-        Call ShowScrollBar(TextMain.hWnd, SB_BOTH, True)
+        CurrentTextBox = 0
+        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(1).Text)
+        Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(1).Text)
+        TextMain(CurrentTextBox).SelStart = TextMain(1).SelStart
+        TextMain(CurrentTextBox).SelLength = TextMain(1).SelLength
     End If
+    TextMain(CurrentTextBox).SetFocus
+    TextMain(CurrentTextBox).ZOrder
     ' Enable/Disable the Go To... menu if word wrapper
     MenuEditGoto.Enabled = Not MenuFormatWordWrap.Checked
     ' Hide the status bar menu and status bar if word wrapped
@@ -233,12 +264,18 @@ Private Sub Form_Load()
     Else
         MenuLanguageVBScript_Click
     End If
-    TextMain.FontName = CStr(GetSetting("Peter Chapman", "VBSE", "FontName", TextMain.FontName))
-    TextMain.FontSize = CInt(GetSetting("Peter Chapman", "VBSE", "FontSize", TextMain.FontSize))
-    TextMain.FontBold = CBool(GetSetting("Peter Chapman", "VBSE", "FontBold", TextMain.FontBold))
-    TextMain.FontItalic = CBool(GetSetting("Peter Chapman", "VBSE", "FontItalic", TextMain.FontItalic))
-    TextMain.FontUnderline = CBool(GetSetting("Peter Chapman", "VBSE", "FontUnderline", TextMain.FontUnderline))
-    TextMain.FontStrikethru = CBool(GetSetting("Peter Chapman", "VBSE", "FontStrikethru", TextMain.FontStrikethru))
+    TextMain(0).FontName = CStr(GetSetting("Peter Chapman", "VBSE", "FontName", TextMain(0).FontName))
+    TextMain(0).FontSize = CInt(GetSetting("Peter Chapman", "VBSE", "FontSize", TextMain(0).FontSize))
+    TextMain(0).FontBold = CBool(GetSetting("Peter Chapman", "VBSE", "FontBold", TextMain(0).FontBold))
+    TextMain(0).FontItalic = CBool(GetSetting("Peter Chapman", "VBSE", "FontItalic", TextMain(0).FontItalic))
+    TextMain(0).FontUnderline = CBool(GetSetting("Peter Chapman", "VBSE", "FontUnderline", TextMain(0).FontUnderline))
+    TextMain(0).FontStrikethru = CBool(GetSetting("Peter Chapman", "VBSE", "FontStrikethru", TextMain(0).FontStrikethru))
+    TextMain(1).FontName = TextMain(0).FontName
+    TextMain(1).FontSize = TextMain(0).FontSize
+    TextMain(1).FontBold = TextMain(0).FontBold
+    TextMain(1).FontItalic = TextMain(0).FontItalic
+    TextMain(1).FontUnderline = TextMain(0).FontUnderline
+    TextMain(1).FontStrikethru = TextMain(0).FontStrikethru
     ' Resize the text box to suit the window
     Form_Resize
 End Sub
@@ -256,7 +293,7 @@ End Sub
 ' Form Query Unload Event Handler
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
     ' See if there is something to save
-    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
+    If TextChanged And Not (TextMain(CurrentTextBox).Text = "" And FilePath = "Untitled") Then
         Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
             Case vbYes
                 MenuFileSave_Click
@@ -273,6 +310,11 @@ End Sub
 ' Form Resize Event
 Private Sub Form_Resize()
     On Error Resume Next
+    ' Set up the text boxes correctly
+    TextMain(0).Top = 0
+    TextMain(0).Left = 0
+    TextMain(1).Top = 0
+    TextMain(1).Left = 0
     ' If we have the status bar showing
     If MenuViewStatusBar.Checked Then
         ' Position the status bar
@@ -281,13 +323,16 @@ Private Sub Form_Resize()
         PictureStatus.Width = Me.ScaleWidth
         LabelStatus.Width = PictureStatus.ScaleWidth - 100
         ' The text box fills the entire window, less the status bar
-        TextMain.Width = Me.ScaleWidth
-        TextMain.Height = Me.ScaleHeight - PictureStatus.Height
+        TextMain(0).Width = Me.ScaleWidth
+        TextMain(0).Height = Me.ScaleHeight - PictureStatus.Height
     Else
         ' The text box fills the entire window
-        TextMain.Width = Me.ScaleWidth
-        TextMain.Height = Me.ScaleHeight
+        TextMain(0).Width = Me.ScaleWidth
+        TextMain(0).Height = Me.ScaleHeight
     End If
+    ' Set the other text box's dimensions
+    TextMain(1).Width = TextMain(0).Width
+    TextMain(1).Height = TextMain(0).Height
 End Sub
 
 ' Form Unload Event Handler
@@ -308,12 +353,12 @@ Private Sub Form_Unload(Cancel As Integer)
     Else
         SaveSetting "Peter Chapman", "VBSE", "Language", "VBScript"
     End If
-    SaveSetting "Peter Chapman", "VBSE", "FontName", TextMain.FontName
-    SaveSetting "Peter Chapman", "VBSE", "FontSize", TextMain.FontSize
-    SaveSetting "Peter Chapman", "VBSE", "FontBold", TextMain.FontBold
-    SaveSetting "Peter Chapman", "VBSE", "FontItalic", TextMain.FontItalic
-    SaveSetting "Peter Chapman", "VBSE", "FontUnderline", TextMain.FontUnderline
-    SaveSetting "Peter Chapman", "VBSE", "FontStrikethru", TextMain.FontStrikethru
+    SaveSetting "Peter Chapman", "VBSE", "FontName", TextMain(CurrentTextBox).FontName
+    SaveSetting "Peter Chapman", "VBSE", "FontSize", TextMain(CurrentTextBox).FontSize
+    SaveSetting "Peter Chapman", "VBSE", "FontBold", TextMain(CurrentTextBox).FontBold
+    SaveSetting "Peter Chapman", "VBSE", "FontItalic", TextMain(CurrentTextBox).FontItalic
+    SaveSetting "Peter Chapman", "VBSE", "FontUnderline", TextMain(CurrentTextBox).FontUnderline
+    SaveSetting "Peter Chapman", "VBSE", "FontStrikethru", TextMain(CurrentTextBox).FontStrikethru
     ' Exit the program
     End
 End Sub
@@ -327,9 +372,9 @@ Private Sub GetCursorCoordinates()
         Dim Column As Long
         Dim Start As Long
         ' Get the co-ordinates
-        Start = TextMain.SelStart
-        LineNumber = SendMessage(TextMain.hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
-        Column = SendMessage(TextMain.hWnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
+        Start = TextMain(CurrentTextBox).SelStart
+        LineNumber = SendMessage(TextMain(CurrentTextBox).hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
+        Column = SendMessage(TextMain(CurrentTextBox).hWnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
         ' Update the status bar
         LabelStatus.Caption = "Line " + CStr(LineNumber + 1) & ", Column " & CStr(Start - Column + 1)
     End If
@@ -365,17 +410,17 @@ End Sub
 ' Edit Menu Click Event Handler
 Private Sub MenuEdit_Click()
     ' Disable/Enable the menu items as required
-    MenuEditUndo.Enabled = UndoText <> TextMain.Text
-    MenuEditCut.Enabled = TextMain.SelLength > 0
-    MenuEditCopy.Enabled = TextMain.SelLength > 0
+    MenuEditUndo.Enabled = UndoText <> TextMain(CurrentTextBox).Text
+    MenuEditCut.Enabled = TextMain(CurrentTextBox).SelLength > 0
+    MenuEditCopy.Enabled = TextMain(CurrentTextBox).SelLength > 0
     MenuEditPaste.Enabled = Clipboard.GetFormat(vbCFText) And Len(Clipboard.GetText()) > 0
-    MenuEditDelete.Enabled = TextMain.SelLength > 0
+    MenuEditDelete.Enabled = TextMain(CurrentTextBox).SelLength > 0
 End Sub
 
 ' Edit -> Copy Menu Click Event Handler
 Private Sub MenuEditCopy_Click()
     Clipboard.Clear
-    Clipboard.SetText TextMain.SelText
+    Clipboard.SetText TextMain(CurrentTextBox).SelText
 End Sub
 
 ' Edit -> Cut Menu Click Event Handler
@@ -388,11 +433,11 @@ End Sub
 ' Edit -> Delete Menu Click Event Handler
 Private Sub MenuEditDelete_Click()
     ' Store the undo value
-    UndoStart = TextMain.SelStart
-    UndoLength = TextMain.SelLength
-    UndoText = TextMain.Text
+    UndoStart = TextMain(CurrentTextBox).SelStart
+    UndoLength = TextMain(CurrentTextBox).SelLength
+    UndoText = TextMain(CurrentTextBox).Text
     ' Clear the selected text
-    TextMain.SelText = ""
+    TextMain(CurrentTextBox).SelText = ""
 End Sub
 
 ' Edit -> Go To Menu Click Event Handler
@@ -401,16 +446,16 @@ Private Sub MenuEditGoto_Click()
     Dim LineNumber As String
     Dim CharacterIndex As Long
     ' Get the current line number
-    LineNumber = CStr(SendMessage(TextMain.hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&) + 1)
+    LineNumber = CStr(SendMessage(TextMain(CurrentTextBox).hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&) + 1)
     ' Get the new line number
     LineNumber = InputBox("Line Number:", "Go To Line", LineNumber)
     ' If we have a valid number
     If LineNumber <> "" And IsNumeric(LineNumber) And CLng(Val(LineNumber)) > 0 Then
         CharacterIndex = CLng(LineNumber) - 1
-        CharacterIndex = SendMessage(TextMain.hWnd, EM_LINEINDEX, ByVal CharacterIndex, ByVal CLng(0))
-        TextMain.SetFocus
+        CharacterIndex = SendMessage(TextMain(CurrentTextBox).hWnd, EM_LINEINDEX, ByVal CharacterIndex, ByVal CLng(0))
+        TextMain(CurrentTextBox).SetFocus
         If CharacterIndex <> -1 Then
-            TextMain.SelStart = CharacterIndex
+            TextMain(CurrentTextBox).SelStart = CharacterIndex
         End If
     End If
 End Sub
@@ -418,18 +463,18 @@ End Sub
 ' Edit -> Paste Menu Click Event Handler
 Private Sub MenuEditPaste_Click()
     ' Store the undo value
-    UndoStart = TextMain.SelStart
-    UndoLength = TextMain.SelLength
-    UndoText = TextMain.Text
+    UndoStart = TextMain(CurrentTextBox).SelStart
+    UndoLength = TextMain(CurrentTextBox).SelLength
+    UndoText = TextMain(CurrentTextBox).Text
     ' Replace the selected text with the clipboard
-    TextMain.SelText = Clipboard.GetText()
+    TextMain(CurrentTextBox).SelText = Clipboard.GetText()
 End Sub
 
 ' Edit -> Select All Menu Click Event Handler
 Private Sub MenuEditSelectAll_Click()
     ' Select all text
-    TextMain.SelStart = 0
-    TextMain.SelLength = Len(TextMain.Text)
+    TextMain(CurrentTextBox).SelStart = 0
+    TextMain(CurrentTextBox).SelLength = Len(TextMain(CurrentTextBox).Text)
 End Sub
 
 ' Edit -> Undo Menu Click Event Handler
@@ -438,13 +483,13 @@ Private Sub MenuEditUndo_Click()
     Dim RedoText As String
     Dim RedoStart As Long
     Dim RedoLength As Long
-    RedoText = TextMain.Text
-    RedoStart = TextMain.SelStart
-    RedoLength = TextMain.SelLength
+    RedoText = TextMain(CurrentTextBox).Text
+    RedoStart = TextMain(CurrentTextBox).SelStart
+    RedoLength = TextMain(CurrentTextBox).SelLength
     ' Undo the text, and return the cursor to the appropriate position
-    TextMain.Text = UndoText
-    TextMain.SelStart = UndoStart
-    TextMain.SelLength = UndoLength
+    TextMain(CurrentTextBox).Text = UndoText
+    TextMain(CurrentTextBox).SelStart = UndoStart
+    TextMain(CurrentTextBox).SelLength = UndoLength
     ' Store the redo text and cursor as the undo text
     UndoText = RedoText
     UndoStart = RedoStart
@@ -459,7 +504,7 @@ End Sub
 ' File -> New Menu Click Event Handler
 Private Sub MenuFileNew_Click()
     ' Show the save prompt if the text has changed
-    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
+    If TextChanged And Not (TextMain(CurrentTextBox).Text = "" And FilePath = "Untitled") Then
         Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
             Case vbYes
                 MenuFileSave_Click
@@ -468,7 +513,7 @@ Private Sub MenuFileNew_Click()
         End Select
     End If
     ' Clear the text box, undo, and changed values
-    TextMain.Text = ""
+    TextMain(CurrentTextBox).Text = ""
     UndoText = ""
     UndoStart = 0
     UndoLength = 0
@@ -482,7 +527,7 @@ End Sub
 ' File -> Open Menu Click Event Handler
 Private Sub MenuFileOpen_Click()
     ' Show the save prompt if the text has changed
-    If TextChanged And Not (TextMain.Text = "" And FilePath = "Untitled") Then
+    If TextChanged And Not (TextMain(CurrentTextBox).Text = "" And FilePath = "Untitled") Then
         Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, "Open")
             Case vbYes
                 MenuFileSave_Click
@@ -526,24 +571,30 @@ End Sub
 ' Format -> Font Menu Click Event Handler
 Private Sub MenuFormatFont_Click()
     ' Set up the font dialog
-    CommonDialogMain.FontName = TextMain.FontName
-    CommonDialogMain.FontSize = TextMain.FontSize
-    CommonDialogMain.FontBold = TextMain.FontBold
-    CommonDialogMain.FontItalic = TextMain.FontItalic
-    CommonDialogMain.FontUnderline = TextMain.FontUnderline
-    CommonDialogMain.FontStrikethru = TextMain.FontStrikethru
+    CommonDialogMain.FontName = TextMain(CurrentTextBox).FontName
+    CommonDialogMain.FontSize = TextMain(CurrentTextBox).FontSize
+    CommonDialogMain.FontBold = TextMain(CurrentTextBox).FontBold
+    CommonDialogMain.FontItalic = TextMain(CurrentTextBox).FontItalic
+    CommonDialogMain.FontUnderline = TextMain(CurrentTextBox).FontUnderline
+    CommonDialogMain.FontStrikethru = TextMain(CurrentTextBox).FontStrikethru
     CommonDialogMain.CancelError = False
     CommonDialogMain.Flags = cdlCFANSIOnly + cdlCFBoth
     ' Show the font dialog
     On Error GoTo CancelFont
     CommonDialogMain.ShowFont
     ' Update the font
-    TextMain.FontName = CommonDialogMain.FontName
-    TextMain.FontSize = CommonDialogMain.FontSize
-    TextMain.FontBold = CommonDialogMain.FontBold
-    TextMain.FontItalic = CommonDialogMain.FontItalic
-    TextMain.FontUnderline = CommonDialogMain.FontUnderline
-    TextMain.FontStrikethru = CommonDialogMain.FontStrikethru
+    TextMain(0).FontName = CommonDialogMain.FontName
+    TextMain(0).FontSize = CommonDialogMain.FontSize
+    TextMain(0).FontBold = CommonDialogMain.FontBold
+    TextMain(0).FontItalic = CommonDialogMain.FontItalic
+    TextMain(0).FontUnderline = CommonDialogMain.FontUnderline
+    TextMain(0).FontStrikethru = CommonDialogMain.FontStrikethru
+    TextMain(1).FontName = TextMain(0).FontName
+    TextMain(1).FontSize = TextMain(0).FontSize
+    TextMain(1).FontBold = TextMain(0).FontBold
+    TextMain(1).FontItalic = TextMain(0).FontItalic
+    TextMain(1).FontUnderline = TextMain(0).FontUnderline
+    TextMain(1).FontStrikethru = TextMain(0).FontStrikethru
 CancelFont:
 End Sub
 
@@ -592,7 +643,7 @@ End Sub
 Private Sub MenuRunStart_Click()
     On Error Resume Next
     InitialiseScripting
-    ScriptMain.AddCode TextMain.Text
+    ScriptMain.AddCode TextMain(CurrentTextBox).Text
 End Sub
 
 ' View -> Status Bar Menu Click Event Handler
@@ -608,7 +659,6 @@ Public Function OpenFile(FileName As String) As Boolean
     On Error GoTo OpenFileError
     Dim F As Integer
     Dim S As String
-    Dim nRet As Long
     If FileName <> "" Then
         ' Get Text into Memory
         F = FreeFile
@@ -617,8 +667,8 @@ Public Function OpenFile(FileName As String) As Boolean
         Close F
         ' Put it into Text Box
         ' Only works properly under NT\2000\XP
-        nRet = SendMessage(TextMain.hWnd, WM_SETTEXT, 0&, ByVal S)
-        nRet = SetWindowText(TextMain.hWnd, S)
+        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal S)
+        Call SetWindowText(TextMain(CurrentTextBox).hWnd, S)
         OpenFile = True
         ' Update the file path
         FilePath = FileName
@@ -671,7 +721,7 @@ Private Sub SaveFile(SaveAs As Boolean)
     Dim F As Integer
     F = FreeFile
     Open FilePath For Output As F
-    Print #F, TextMain.Text
+    Print #F, TextMain(CurrentTextBox).Text
     Close F
     ' Update the window caption
     Me.Caption = GetFileNameFromPath(FilePath) & " - " & App.Title & " " & App.Major & "." & App.Minor
@@ -688,7 +738,7 @@ Private Sub ScriptMain_Error()
 End Sub
 
 ' Textbox Change Event Handler
-Private Sub TextMain_Change()
+Private Sub TextMain_Change(Index As Integer)
     ' Update the changed flag
     TextChanged = True
     ' Update the status bar
@@ -696,32 +746,34 @@ Private Sub TextMain_Change()
 End Sub
 
 ' Textbox Key Down Event Handler
-Private Sub TextMain_KeyDown(KeyCode As Integer, Shift As Integer)
+Private Sub TextMain_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
     ' Update the status bar
     GetCursorCoordinates
     ' If selected text is being overwritten
-    If Shift = 0 And TextMain.SelLength > 0 Then
+    If Shift = 0 And TextMain(Index).SelLength > 0 Then
         ' Store the undo value
-        UndoStart = TextMain.SelStart
-        UndoLength = TextMain.SelLength
-        UndoText = TextMain.Text
+        UndoStart = TextMain(Index).SelStart
+        UndoLength = TextMain(Index).SelLength
+        UndoText = TextMain(Index).Text
     End If
 End Sub
 
 ' Textbox Mouse Down Event Handler
-Private Sub TextMain_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    ' Update the status bar
-    GetCursorCoordinates
+Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
     ' If the right mouse button
     If Button = vbRightButton Then
         ' Disable the textbox
-        TextMain.Enabled = False
+        TextMain(Index).Enabled = False
         ' This DoEvents seems to be optional?
         DoEvents
         ' Re-enable the control, so that it doesn't appear as grayed
-        TextMain.Enabled = True
+        TextMain(Index).Enabled = True
+        TextMain(Index).SetFocus
         ' Show the custom menu
         PopupMenu MenuEdit
+    ElseIf Button = vbLeftButton Then
+        ' Update the status bar
+        GetCursorCoordinates
     End If
 End Sub
 
