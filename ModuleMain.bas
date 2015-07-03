@@ -15,11 +15,6 @@ Public Const WM_USER = &H400
 Public Const EM_EXLINEFROMCHAR = &HC9
 Public Const EM_LINEINDEX = &HBB
 
-' Console API calls
-Public Declare Function AllocConsole Lib "kernel32" () As Long
-Public Declare Function GetConsoleTitle Lib "kernel32" Alias "GetConsoleTitleA" (ByVal lpConsoleTitle As String, ByVal nSize As Long) As Long
-Public Declare Function FreeConsole Lib "kernel32" () As Long
-
 ' Program Entrypoint
 Public Sub Main()
     ' Load the editor
