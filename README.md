@@ -8,6 +8,8 @@ I have included several VB objects in the scripting environment, and am in the p
 
 ### DOM Objects
 
+ * console - only log is supported
+ * navigator - a simple implementation
  * window - only alert, confirm, and prompt are currently implemented
 
 ### Visual Basic Objects
@@ -29,7 +31,7 @@ I have included several VB objects in the scripting environment, and am in the p
 
 ## Download
 
-You can download the executable from https://archive.azurewebsites.net/Programs/VBSE-1.1.zip
+You can download the executable from https://archive.azurewebsites.net/Programs/VBSE-1.2.zip
 
 ## This program comes without any warranty
 
