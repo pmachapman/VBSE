@@ -2,17 +2,17 @@ VERSION 4.00
 Begin VB.Form FormMain 
    Caption         =   "Very Basic Script Editor"
    ClientHeight    =   2910
-   ClientLeft      =   2385
-   ClientTop       =   4845
+   ClientLeft      =   1500
+   ClientTop       =   2325
    ClientWidth     =   6000
    Height          =   3720
    Icon            =   "FormMain.frx":0000
-   Left            =   2325
+   Left            =   1440
    LinkTopic       =   "FormMain"
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   400
-   Top             =   4095
+   Top             =   1575
    Width           =   6120
    Begin VB.PictureBox PictureStatus 
       Height          =   255
@@ -114,6 +114,13 @@ Begin VB.Form FormMain
       Begin VB.Menu MenuEditSeparator2 
          Caption         =   "-"
       End
+      Begin VB.Menu MenuEditGoto 
+         Caption         =   "&Go To..."
+         Shortcut        =   ^G
+      End
+      Begin VB.Menu MenuEditSeparator3 
+         Caption         =   "-"
+      End
       Begin VB.Menu MenuEditSelectAll 
          Caption         =   "&Select All"
          Shortcut        =   ^A
@@ -184,6 +191,8 @@ Private Sub Form_Activate()
     Else
         Call ShowScrollBar(TextMain.hWnd, SB_BOTH, True)
     End If
+    ' Enable/Disable the Go To... menu if word wrapper
+    MenuEditGoto.Enabled = Not MenuFormatWordWrap.Checked
     ' Hide the status bar menu and status bar if word wrapped
     If MenuFormatWordWrap.Checked Then
         PictureStatus.Visible = False
@@ -386,6 +395,26 @@ Private Sub MenuEditDelete_Click()
     TextMain.SelText = ""
 End Sub
 
+' Edit -> Go To Menu Click Event Handler
+Private Sub MenuEditGoto_Click()
+    ' Declare Variables
+    Dim LineNumber As String
+    Dim CharacterIndex As Long
+    ' Get the current line number
+    LineNumber = CStr(SendMessage(TextMain.hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&) + 1)
+    ' Get the new line number
+    LineNumber = InputBox("Line Number:", "Go To Line", LineNumber)
+    ' If we have a valid number
+    If LineNumber <> "" And IsNumeric(LineNumber) And CLng(Val(LineNumber)) > 0 Then
+        CharacterIndex = CLng(LineNumber) - 1
+        CharacterIndex = SendMessage(TextMain.hWnd, EM_LINEINDEX, ByVal CharacterIndex, ByVal CLng(0))
+        TextMain.SetFocus
+        If CharacterIndex <> -1 Then
+            TextMain.SelStart = CharacterIndex
+        End If
+    End If
+End Sub
+
 ' Edit -> Paste Menu Click Event Handler
 Private Sub MenuEditPaste_Click()
     ' Store the undo value
@@ -566,6 +595,14 @@ Private Sub MenuRunStart_Click()
     ScriptMain.AddCode TextMain.Text
 End Sub
 
+' View -> Status Bar Menu Click Event Handler
+Private Sub MenuViewStatusBar_Click()
+    MenuViewStatusBar.Checked = Not MenuViewStatusBar.Checked
+    RestoreStatusBar = MenuViewStatusBar.Checked
+    PictureStatus.Visible = MenuViewStatusBar.Checked
+    Form_Resize
+End Sub
+
 ' Open File Function
 Public Function OpenFile(FileName As String) As Boolean
     On Error GoTo OpenFileError
@@ -645,16 +682,9 @@ Private Sub SaveFile(SaveAs As Boolean)
 CancelSave:
 End Sub
 
-Private Sub MenuViewStatusBar_Click()
-    MenuViewStatusBar.Checked = Not MenuViewStatusBar.Checked
-    RestoreStatusBar = MenuViewStatusBar.Checked
-    PictureStatus.Visible = MenuViewStatusBar.Checked
-    Form_Resize
-End Sub
-
 ' Scripting Error Handler
 Private Sub ScriptMain_Error()
-    MsgBox "Error " & ScriptMain.Error.Number & ": " & ScriptMain.Error.Description & vbCrLf & "On Line: " & ScriptMain.Error.line & vbCrLf & vbCrLf & ScriptMain.Error.Text, vbCritical, "Script Error"
+    MsgBox "Error " & ScriptMain.Error.Number & ": " & ScriptMain.Error.Description & vbCrLf & "On Line: " & ScriptMain.Error.Line & vbCrLf & vbCrLf & ScriptMain.Error.Text, vbCritical, "Script Error"
 End Sub
 
 ' Textbox Change Event Handler
