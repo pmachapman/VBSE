@@ -258,6 +258,13 @@ Private Sub Form_Load()
     Me.Height = CLng(GetSetting("Peter Chapman", "VBSE", "Height", Me.Height))
     Me.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "WindowState", Me.WindowState))
     MenuFormatWordWrap.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked))
+    MenuViewConsole.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "Console", MenuViewConsole.Checked))
+    FormConsole.Visible = MenuViewConsole.Checked
+    FormConsole.Left = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleLeft", FormConsole.Left))
+    FormConsole.Top = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleTop", FormConsole.Top))
+    FormConsole.Width = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleWidth", FormConsole.Width))
+    FormConsole.Height = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleHeight", FormConsole.Height))
+    FormConsole.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleWindowState", FormConsole.WindowState))
     MenuViewStatusBar.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked))
     Dim language As String
     language = CStr(GetSetting("Peter Chapman", "VBSE", "Language", "VBScript"))
@@ -355,6 +362,16 @@ Private Sub Form_Unload(Cancel As Integer)
     SaveSetting "Peter Chapman", "VBSE", "Width", Me.Width
     SaveSetting "Peter Chapman", "VBSE", "Height", Me.Height
     SaveSetting "Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked
+    SaveSetting "Peter Chapman", "VBSE", "Console", MenuViewConsole.Checked
+    SaveSetting "Peter Chapman", "VBSE", "ConsoleWindowState", FormConsole.WindowState
+    If FormConsole.WindowState <> vbNormal Then
+        If Not FormConsole.Visible Then FormConsole.Show
+        FormConsole.WindowState = vbNormal
+    End If
+    SaveSetting "Peter Chapman", "VBSE", "ConsoleLeft", FormConsole.Left
+    SaveSetting "Peter Chapman", "VBSE", "ConsoleTop", FormConsole.Top
+    SaveSetting "Peter Chapman", "VBSE", "ConsoleWidth", FormConsole.Width
+    SaveSetting "Peter Chapman", "VBSE", "ConsoleHeight", FormConsole.Height
     SaveSetting "Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked
     If MenuLanguageText.Checked Then
         SaveSetting "Peter Chapman", "VBSE", "Language", "Text"
