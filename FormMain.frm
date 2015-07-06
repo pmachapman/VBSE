@@ -280,6 +280,12 @@ Private Sub Form_Load()
     TextMain(1).FontItalic = TextMain(0).FontItalic
     TextMain(1).FontUnderline = TextMain(0).FontUnderline
     TextMain(1).FontStrikethru = TextMain(0).FontStrikethru
+    FormConsole.TextOutput.FontName = TextMain(0).FontName
+    FormConsole.TextOutput.FontSize = TextMain(0).FontSize
+    FormConsole.TextOutput.FontBold = TextMain(0).FontBold
+    FormConsole.TextOutput.FontItalic = TextMain(0).FontItalic
+    FormConsole.TextOutput.FontUnderline = TextMain(0).FontUnderline
+    FormConsole.TextOutput.FontStrikethru = TextMain(0).FontStrikethru
     ' Resize the text box to suit the window
     Form_Resize
 End Sub
@@ -425,7 +431,7 @@ End Sub
 
 ' Edit -> Copy Menu Click Event Handler
 Private Sub MenuEditCopy_Click()
-    Clipboard.clear
+    Clipboard.Clear
     Clipboard.SetText TextMain(CurrentTextBox).SelText
 End Sub
 
@@ -601,6 +607,12 @@ Private Sub MenuFormatFont_Click()
     TextMain(1).FontItalic = TextMain(0).FontItalic
     TextMain(1).FontUnderline = TextMain(0).FontUnderline
     TextMain(1).FontStrikethru = TextMain(0).FontStrikethru
+    FormConsole.TextOutput.FontName = TextMain(0).FontName
+    FormConsole.TextOutput.FontSize = TextMain(0).FontSize
+    FormConsole.TextOutput.FontBold = TextMain(0).FontBold
+    FormConsole.TextOutput.FontItalic = TextMain(0).FontItalic
+    FormConsole.TextOutput.FontUnderline = TextMain(0).FontUnderline
+    FormConsole.TextOutput.FontStrikethru = TextMain(0).FontStrikethru
 CancelFont:
 End Sub
 
