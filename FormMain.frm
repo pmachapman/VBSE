@@ -839,7 +839,7 @@ Public Function OpenFile(FileName As String) As Boolean
         ' Update the window caption
         Me.Caption = GetFileNameFromPath(FilePath) & " - " & App.Title & " " & App.Major & "." & App.Minor
         ' Reset the undo and changed values
-        UndoText = ""
+        UndoText = S
         UndoStart = 0
         UndoLength = 0
         TextChanged = False
