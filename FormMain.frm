@@ -493,23 +493,29 @@ End Sub
 
 ' Gets The File MRU List
 Private Sub GetMRUFileList()
-   Dim i As Long        ' Loop control variable
-   Dim result As String ' Name of MRU from registry
-   
-   ' Loop through all entries
-   Do
-      ' Retrieve entry from registry
-      result = GetSetting("Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), "")
-      
-      ' Check if a value was returned
-      If result <> "" Then
-         ' Call sub to additem to MRU list
-         AddMRUItem result
-      End If
-      
-      ' Increment counter
-      i = i + 1
-   Loop Until (result = "")
+    Dim i As Long        ' Loop control variable
+    Dim result As String ' Name of MRU from registry
+    Dim results(MaxMRU) As String
+    ' Loop through all entries
+    Do
+        ' Retrieve entry from registry
+        result = GetSetting("Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), "")
+        
+        ' Check if a value was returned
+        If result <> "" Then
+            results(i) = result
+        End If
+        
+        ' Increment counter
+        i = i + 1
+    Loop Until (result = "")
+    ' Add each MRU item
+    For i = (MaxMRU - 1) To 0 Step -1
+        If results(i) <> "" Then
+            ' Call sub to additem to MRU list
+            AddMRUItem results(i)
+        End If
+    Next i
 End Sub
 
 ' Gets the file name from a path
@@ -922,7 +928,7 @@ Private Sub SaveFile(SaveAs As Boolean)
     Dim F As Integer
     F = FreeFile
     Open FilePath For Output As F
-    Print #F, TextMain(CurrentTextBox).Text
+    Print #F, TextMain(CurrentTextBox).Text;
     Close F
     ' Update the window caption
     Me.Caption = GetFileNameFromPath(FilePath) & " - " & App.Title & " " & App.Major & "." & App.Minor
