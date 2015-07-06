@@ -2,17 +2,18 @@ VERSION 4.00
 Begin VB.Form FormMain 
    Caption         =   "Very Basic Script Editor"
    ClientHeight    =   2910
-   ClientLeft      =   1500
-   ClientTop       =   2325
+   ClientLeft      =   2370
+   ClientTop       =   4515
    ClientWidth     =   6000
    Height          =   3720
    Icon            =   "FormMain.frx":0000
-   Left            =   1440
+   Left            =   2310
    LinkTopic       =   "Main"
+   LockControls    =   -1  'True
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   400
-   Top             =   1575
+   Top             =   3765
    Width           =   6120
    Begin VB.TextBox TextMain 
       BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
@@ -99,7 +100,16 @@ Begin VB.Form FormMain
       Begin VB.Menu MenuFileSaveAs 
          Caption         =   "Save &As..."
       End
-      Begin VB.Menu MenuFileSeparator 
+      Begin VB.Menu MenuFileSeparator1 
+         Caption         =   "-"
+         Visible         =   0   'False
+      End
+      Begin VB.Menu MenuFileMRU 
+         Caption         =   "MRU List"
+         Index           =   0
+         Visible         =   0   'False
+      End
+      Begin VB.Menu MenuFileSeparator2 
          Caption         =   "-"
       End
       Begin VB.Menu MenuFileExit 
@@ -207,6 +217,74 @@ Dim TextChanged As Boolean
 Dim UndoText As String
 Dim UndoStart As Long
 Dim UndoLength As Long
+' MRU List Constants and Variables
+Private Const MaxMRU = 4    ' Maximum number of MRUs in list (-1 for no limit)
+Private Const NotFound = -1 ' Indicates a duplicate entry was not found
+Private Const NoMRUs = -1   ' Indicates no MRUs are currently defined
+Private MRUCount As Long    ' Maintains a count of MRUs defined
+
+' Add Menu Item Routine
+Private Sub AddMenuElement(NewItem As String)
+    ' Declare variables
+    Dim i As Long
+    ' Handle error when using a removed MRU item
+    On Error GoTo AlreadyLoaded
+    ' Check that we will not exceed maximum MRUs
+    If (MRUCount < (MaxMRU - 1)) Or (MaxMRU = -1) Then
+        ' Increment the menu count
+        MRUCount = MRUCount + 1
+        ' Show the separator
+        MenuFileSeparator1.Visible = True
+        ' Check if this is the first item
+        If MRUCount <> 0 Then
+            ' Add a new element to the menu
+            Load MenuFileMRU(MRUCount)
+        End If
+AlreadyLoaded:
+        ' Make new element visible
+        MenuFileMRU(MRUCount).Visible = True
+    End If
+    ' Shift items to maintain most recent to least recent
+    For i = MRUCount To 1 Step -1
+        ' Set the captions
+        MenuFileMRU(i).Caption = MenuFileMRU(i - 1).Caption
+    Next i
+    ' Set caption for new item
+    MenuFileMRU(0).Caption = NewItem
+End Sub
+
+' Add MRU Item Routine
+Private Sub AddMRUItem(NewItem As String)
+   Dim result As Long
+   ' Call sub to check for duplicates
+   result = CheckForDuplicateMRU(NewItem)
+   ' Handle case if duplicate found
+   If result <> NotFound Then
+      ' Call sub to reorder MRU list
+      ReorderMRUList NewItem, result
+   Else
+      ' Call sub to add new item to MRU menu
+      AddMenuElement NewItem
+   End If
+End Sub
+
+' Check For Duplicate MRU Item Function
+Private Function CheckForDuplicateMRU(ByVal NewItem As String) As Long
+    Dim i As Long
+    ' Uppercase newitem for string comparisons
+    NewItem = UCase(NewItem)
+    ' Check all existing MRUs for duplicate
+    For i = 0 To MRUCount
+        If UCase(MenuFileMRU(i).Caption) = NewItem Then
+            ' Duplicate found, return the location of the duplicate
+            CheckForDuplicateMRU = i
+            ' Stop searching
+            Exit Function
+        End If
+    Next i
+    ' No duplicate found, so return -1
+    CheckForDuplicateMRU = -1
+End Function
 
 ' Form Activate Event Handler
 Private Sub Form_Activate()
@@ -293,6 +371,10 @@ Private Sub Form_Load()
     FormConsole.TextOutput.FontItalic = TextMain(0).FontItalic
     FormConsole.TextOutput.FontUnderline = TextMain(0).FontUnderline
     FormConsole.TextOutput.FontStrikethru = TextMain(0).FontStrikethru
+    ' Initialize the count of MRUs
+    MRUCount = NoMRUs
+    ' Call sub to retrieve the MRU filenames
+    GetMRUFileList
     ' Resize the text box to suit the window
     Form_Resize
 End Sub
@@ -386,6 +468,8 @@ Private Sub Form_Unload(Cancel As Integer)
     SaveSetting "Peter Chapman", "VBSE", "FontItalic", TextMain(CurrentTextBox).FontItalic
     SaveSetting "Peter Chapman", "VBSE", "FontUnderline", TextMain(CurrentTextBox).FontUnderline
     SaveSetting "Peter Chapman", "VBSE", "FontStrikethru", TextMain(CurrentTextBox).FontStrikethru
+    ' Call sub to save the MRU filenames
+    SaveMRUFileList
     ' Exit the program
     End
 End Sub
@@ -407,6 +491,26 @@ Private Sub GetCursorCoordinates()
     End If
 End Sub
 
+' Gets The File MRU List
+Private Sub GetMRUFileList()
+   Dim i As Long        ' Loop control variable
+   Dim result As String ' Name of MRU from registry
+   
+   ' Loop through all entries
+   Do
+      ' Retrieve entry from registry
+      result = GetSetting("Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), "")
+      
+      ' Check if a value was returned
+      If result <> "" Then
+         ' Call sub to additem to MRU list
+         AddMRUItem result
+      End If
+      
+      ' Increment counter
+      i = i + 1
+   Loop Until (result = "")
+End Sub
 
 ' Gets the file name from a path
 Function GetFileNameFromPath(ByVal Path As String) As String
@@ -528,6 +632,20 @@ End Sub
 ' File -> Exit Menu Click Event Handler
 Private Sub MenuFileExit_Click()
     Unload Me
+End Sub
+
+' File -> MRU Menu Click Event Handler
+Private Sub MenuFileMRU_Click(Index As Integer)
+    ' Open the file
+    If Dir(MenuFileMRU(Index).Caption) = "" Then
+        If MsgBox(MenuFileMRU(Index).Caption & " could not be not found." & vbCrLf & vbCrLf & "Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement MenuFileMRU(Index).Caption
+        End If
+    ElseIf Not OpenFile(MenuFileMRU(Index).Caption) Then
+        If MsgBox(MenuFileMRU(Index).Caption & " is invalid and cannot be opened." & vbCrLf & "vbCrLf & Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement MenuFileMRU(Index).Caption
+        End If
+    End If
 End Sub
 
 ' File -> New Menu Click Event Handler
@@ -725,6 +843,9 @@ Public Function OpenFile(FileName As String) As Boolean
         UndoStart = 0
         UndoLength = 0
         TextChanged = False
+        ' Call sub to add this file as an MRU
+        On Error GoTo 0
+        AddMRUItem FilePath
     Else
         OpenFile = False
     End If
@@ -732,6 +853,42 @@ Public Function OpenFile(FileName As String) As Boolean
 OpenFileError:
     OpenFile = False
 End Function
+
+' Remove Menu Item Routine
+Private Sub RemoveMenuElement(RemoveItem As String)
+    Dim i As Long
+    Dim result As Long
+    ' Only do this if we have more than one item
+    If MRUCount > 0 Then
+        ' Call sub to check for duplicates
+        result = CheckForDuplicateMRU(RemoveItem)
+        ' Call sub to reorder MRU list
+        ReorderMRUList RemoveItem, result
+        ' Shift items up to the top of the list
+        For i = 1 To MRUCount
+            ' Set the captions
+            MenuFileMRU(i - 1).Caption = MenuFileMRU(i).Caption
+        Next i
+    Else
+        ' Hide the separator
+        MenuFileSeparator1.Visible = False
+    End If
+    ' Remove the last item
+    MenuFileMRU(MRUCount).Visible = False
+    MRUCount = MRUCount - 1
+End Sub
+
+' Reorder MRU List Routine
+Private Sub ReorderMRUList(DuplicateMRU As String, DuplicateLocation As Long)
+    Dim i As Long
+    ' Move entries previously "more recent" than the
+    ' duplicate down one in the MRU list
+    For i = DuplicateLocation To 1 Step -1
+        MenuFileMRU(i).Caption = MenuFileMRU(i - 1).Caption
+    Next i
+    ' Set the caption of new item
+    MenuFileMRU(0).Caption = DuplicateMRU
+End Sub
 
 ' Save File Routine
 Private Sub SaveFile(SaveAs As Boolean)
@@ -771,9 +928,21 @@ Private Sub SaveFile(SaveAs As Boolean)
     Me.Caption = GetFileNameFromPath(FilePath) & " - " & App.Title & " " & App.Major & "." & App.Minor
     ' Reset the changed flag
     TextChanged = False
+    ' Call sub to add this file as an MRU
+    AddMRUItem FilePath
     ' Update the language menu
     UpdateFileLanguage
 CancelSave:
+End Sub
+
+' Save MRU List Routine
+Private Sub SaveMRUFileList()
+    Dim i As Long ' Loop control variable
+    ' Loop through all MRU
+    For i = 0 To MRUCount
+        ' Write MRU to registry with key as its position in list
+        SaveSetting "Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), MenuFileMRU(i).Caption
+    Next i
 End Sub
 
 ' Scripting Error Handler
