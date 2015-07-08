@@ -41,3 +41,31 @@ Public Sub Main()
     ' Show the editor
     FormMain.Show
 End Sub
+
+' Implementation of VB6's Replace function
+Public Function Replace(sIn As String, sFind As String, sReplace As String, Optional nStart, Optional nCount, Optional bCompare) As String
+    Dim nC As Long, nPos As Integer, sOut As String
+    If IsMissing(nStart) Then
+        nStart = 1
+    End If
+    If IsMissing(nCount) Then
+        nCount = -1
+    End If
+    If IsMissing(bCompare) Then
+        bCompare = 0
+    End If
+    sOut = sIn
+    nPos = InStr(CLng(nStart), sOut, sFind, bCompare)
+    If nPos = 0 Then GoTo EndFn:
+    Do
+        nC = nC + 1
+        sOut = Left(sOut, nPos - 1) & sReplace & _
+           Mid(sOut, nPos + Len(sFind))
+        If CLng(nCount) <> -1 And nC >= CLng(nCount) Then Exit Do
+        nPos = InStr(CLng(nStart), sOut, sFind, bCompare)
+    Loop While nPos > 0
+EndFn:
+    Replace = sOut
+End Function
+
+

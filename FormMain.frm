@@ -110,6 +110,13 @@ Begin VB.Form FormMain
       Begin VB.Menu MenuFileSaveAs 
          Caption         =   "Save &As..."
       End
+      Begin VB.Menu MenuFileSeparator0 
+         Caption         =   "-"
+      End
+      Begin VB.Menu MenuFilePrint 
+         Caption         =   "&Print"
+         Shortcut        =   ^P
+      End
       Begin VB.Menu MenuFileSeparator1 
          Caption         =   "-"
          Visible         =   0   'False
@@ -741,6 +748,26 @@ Private Sub MenuFileOpen_Click()
 CancelOpen:
 End Sub
 
+' File -> Print Menu Click Event Handler
+Private Sub MenuFilePrint_Click()
+    ' Declare variables
+    Dim i As Integer
+    Dim NumCopies As Integer
+    ' Show the printer dialog
+    On Error GoTo NoPrinting
+    CommonDialogMain.CancelError = True
+    CommonDialogMain.Flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
+    CommonDialogMain.PrinterDefault = True
+    CommonDialogMain.ShowPrinter
+    ' Print
+    Printer.Orientation = CommonDialogMain.Orientation
+    NumCopies = CommonDialogMain.Copies
+    For i = 1 To NumCopies
+        PrintText
+    Next i
+NoPrinting:
+End Sub
+
 ' File -> Save Menu Click Event Handler
 Private Sub MenuFileSave_Click()
     SaveFile False
@@ -917,6 +944,75 @@ Public Function OpenFile(FileName As String) As Boolean
 OpenFileError:
     OpenFile = False
 End Function
+
+' Prints the text
+Public Sub PrintText()
+    ' Declare Variables
+    Dim lineToPrint As String
+    Dim nextWord As String
+    Dim textRemaining As String
+    Dim aschar As Integer
+    Dim countChars As Integer
+    Dim widthText As Single
+    ' Set up the print
+    Printer.ScaleMode = 6   ' Set scalemode to mm
+    ' Get text to print from text box
+    textRemaining = TextMain(CurrentTextBox).Text
+    Do
+        Do
+            countChars = countChars + 1
+            ' If we have reached the end of the text
+            If countChars > Len(textRemaining) Then Exit Do
+            aschar = Asc(Mid$(textRemaining, countChars, 1))
+            ' Decide what to do depending on ascii value of character
+            Select Case aschar
+                Case 13
+                    lineToPrint = lineToPrint & nextWord
+                    textRemaining = Replace(textRemaining, nextWord & Chr(13) & Chr(10), "", 1, 1)
+                    Printer.CurrentX = 15
+                    Printer.Print lineToPrint
+                    lineToPrint = ""
+                    nextWord = ""
+                    countChars = 0
+                    If textRemaining = "" Then
+                        Printer.CurrentX = 15
+                        Printer.Print lineToPrint
+                        Printer.EndDoc
+                        Exit Sub
+                    End If
+                    Exit Do
+                Case 32
+                    nextWord = nextWord & Mid$(textRemaining, countChars, 1)
+                    Exit Do
+                Case Else
+                    nextWord = nextWord & Mid$(textRemaining, countChars, 1)
+            End Select
+        Loop
+        widthText = Printer.TextWidth(lineToPrint & nextWord)
+        If widthText <> 0 Then
+            ' Add word to the line to print if it will be less that 150mm wide
+            If widthText < 150 Then
+                lineToPrint = lineToPrint & nextWord
+                textRemaining = Replace(textRemaining, nextWord, "", 1, 1)
+                If textRemaining = "" Then
+                    Printer.CurrentX = 15
+                    Printer.Print lineToPrint
+                    Exit Do
+                End If
+                nextWord = ""
+                countChars = 0
+            Else
+                Printer.CurrentX = 15
+                Printer.Print lineToPrint
+                lineToPrint = nextWord
+                textRemaining = Replace(textRemaining, nextWord, "", 1, 1)
+                nextWord = ""
+                countChars = 0
+            End If
+        End If
+    Loop
+    Printer.EndDoc
+End Sub
 
 ' Remove Menu Item Routine
 Private Sub RemoveMenuElement(RemoveItem As String)
