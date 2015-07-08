@@ -37,6 +37,12 @@ Requirements
  * Windows Script 5.6 Documentation (included) https://www.microsoft.com/en-nz/download/details.aspx?id=2764
 
 ==============================================================================
+Download
+==============================================================================
+
+You can download the latest version from https://github.com/pmachapman/VBSE/releases
+
+==============================================================================
 Source Code
 ==============================================================================
 

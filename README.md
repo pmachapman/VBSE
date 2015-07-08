@@ -32,7 +32,7 @@ I have included several VB objects in the scripting environment, and am in the p
 
 ## Download
 
-You can download the executable from https://archive.azurewebsites.net/Programs/VBSE-1.3.zip
+You can download the latest version from https://github.com/pmachapman/VBSE/releases
 
 ## This program comes without any warranty
 

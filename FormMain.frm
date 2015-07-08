@@ -197,8 +197,11 @@ Begin VB.Form FormMain
    Begin VB.Menu MenuHelp 
       Caption         =   "&Help"
       Begin VB.Menu MenuHelpScript 
-         Caption         =   "&Script Help"
+         Caption         =   "Windows &Script Help"
          Shortcut        =   {F1}
+      End
+      Begin VB.Menu MenuHelpUpdates 
+         Caption         =   "&Check For Updates"
       End
       Begin VB.Menu MenuHelpSeparator 
          Caption         =   "-"
@@ -780,7 +783,7 @@ Private Sub MenuHelpAbout_Click()
     Call ShellAbout(Me.hwnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
 End Sub
 
-' Help -> Script Help Menu Click Event Handler
+' Help -> Windows Script Help Menu Click Event Handler
 Private Sub MenuHelpScript_Click()
     ' Get the path to the help file
     Dim HelpPath As String
@@ -792,12 +795,17 @@ Private Sub MenuHelpScript_Click()
     ' Check the help file exists
     If Dir(HelpPath) = "" Then
         ' Ask if the user wants to download the help file
-        If MsgBox("script56.chm not found in the program directory" & vbCrLf & vbCrLf & "Do you want to download this file?", vbYesNo + vbQuestion) = vbYes Then
+        If MsgBox("The file ""script56.chm"" was not found in the program directory" & vbCrLf & vbCrLf & "Do you want to download this file?", vbYesNo + vbQuestion) = vbYes Then
             Call ShellExecute(Me.hwnd, "Open", "https://www.microsoft.com/en-nz/download/details.aspx?id=2764", "", App.Path, 1)
         End If
     Else
         Call ShellExecute(Me.hwnd, "Open", HelpPath, "", App.Path, 1)
     End If
+End Sub
+
+' Help -> Check For Updates Menu Click Event Handler
+Private Sub MenuHelpUpdates_Click()
+    Call ShellExecute(Me.hwnd, "Open", "https://github.com/pmachapman/VBSE/releases", "", App.Path, 1)
 End Sub
 
 ' Language -> JScript Menu Click Event Handler
