@@ -196,6 +196,13 @@ Begin VB.Form FormMain
    End
    Begin VB.Menu MenuHelp 
       Caption         =   "&Help"
+      Begin VB.Menu MenuHelpScript 
+         Caption         =   "&Script Help"
+         Shortcut        =   {F1}
+      End
+      Begin VB.Menu MenuHelpSeparator 
+         Caption         =   "-"
+      End
       Begin VB.Menu MenuHelpAbout 
          Caption         =   "&About"
       End
@@ -291,14 +298,14 @@ Private Sub Form_Activate()
     ' Process the word wrap value
     If MenuFormatWordWrap.Checked And CurrentTextBox = 0 Then
         CurrentTextBox = 1
-        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(0).Text)
-        Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(0).Text)
+        Call SendMessage(TextMain(CurrentTextBox).hwnd, WM_SETTEXT, 0&, ByVal TextMain(0).Text)
+        Call SetWindowText(TextMain(CurrentTextBox).hwnd, TextMain(0).Text)
         TextMain(CurrentTextBox).SelStart = TextMain(0).SelStart
         TextMain(CurrentTextBox).SelLength = TextMain(0).SelLength
     ElseIf CurrentTextBox = 1 Then
         CurrentTextBox = 0
-        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal TextMain(1).Text)
-        Call SetWindowText(TextMain(CurrentTextBox).hWnd, TextMain(1).Text)
+        Call SendMessage(TextMain(CurrentTextBox).hwnd, WM_SETTEXT, 0&, ByVal TextMain(1).Text)
+        Call SetWindowText(TextMain(CurrentTextBox).hwnd, TextMain(1).Text)
         TextMain(CurrentTextBox).SelStart = TextMain(1).SelStart
         TextMain(CurrentTextBox).SelLength = TextMain(1).SelLength
     End If
@@ -487,8 +494,8 @@ Private Sub GetCursorCoordinates()
         Dim Start As Long
         ' Get the co-ordinates
         Start = TextMain(CurrentTextBox).SelStart
-        LineNumber = SendMessage(TextMain(CurrentTextBox).hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
-        Column = SendMessage(TextMain(CurrentTextBox).hWnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
+        LineNumber = SendMessage(TextMain(CurrentTextBox).hwnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
+        Column = SendMessage(TextMain(CurrentTextBox).hwnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
         ' Update the status bar
         LabelStatus.Caption = "Line " + CStr(LineNumber + 1) & ", Column " & CStr(Start - Column + 1)
     End If
@@ -588,13 +595,13 @@ Private Sub MenuEditGoto_Click()
     Dim LineNumber As String
     Dim CharacterIndex As Long
     ' Get the current line number
-    LineNumber = CStr(SendMessage(TextMain(CurrentTextBox).hWnd, EM_EXLINEFROMCHAR, -1, ByVal 0&) + 1)
+    LineNumber = CStr(SendMessage(TextMain(CurrentTextBox).hwnd, EM_EXLINEFROMCHAR, -1, ByVal 0&) + 1)
     ' Get the new line number
     LineNumber = InputBox("Line Number:", "Go To Line", LineNumber)
     ' If we have a valid number
     If LineNumber <> "" And IsNumeric(LineNumber) And CLng(Val(LineNumber)) > 0 Then
         CharacterIndex = CLng(LineNumber) - 1
-        CharacterIndex = SendMessage(TextMain(CurrentTextBox).hWnd, EM_LINEINDEX, ByVal CharacterIndex, ByVal CLng(0))
+        CharacterIndex = SendMessage(TextMain(CurrentTextBox).hwnd, EM_LINEINDEX, ByVal CharacterIndex, ByVal CLng(0))
         TextMain(CurrentTextBox).SetFocus
         If CharacterIndex <> -1 Then
             TextMain(CurrentTextBox).SelStart = CharacterIndex
@@ -770,7 +777,27 @@ End Sub
 
 ' Help -> About Menu Click Event Handler
 Private Sub MenuHelpAbout_Click()
-    Call ShellAbout(Me.hWnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
+    Call ShellAbout(Me.hwnd, "Windows", App.Title & " " & App.Major & "." & App.Minor & vbCrLf & App.LegalCopyright, Me.Icon)
+End Sub
+
+' Help -> Script Help Menu Click Event Handler
+Private Sub MenuHelpScript_Click()
+    ' Get the path to the help file
+    Dim HelpPath As String
+    HelpPath = App.Path
+    If Right(HelpPath, 1) <> "\" Then
+        HelpPath = HelpPath & "\"
+    End If
+    HelpPath = HelpPath & "script56.chm"
+    ' Check the help file exists
+    If Dir(HelpPath) = "" Then
+        ' Ask if the user wants to download the help file
+        If MsgBox("script56.chm not found in the program directory" & vbCrLf & vbCrLf & "Do you want to download this file?", vbYesNo + vbQuestion) = vbYes Then
+            Call ShellExecute(Me.hwnd, "Open", "https://www.microsoft.com/en-nz/download/details.aspx?id=2764", "", App.Path, 1)
+        End If
+    Else
+        Call ShellExecute(Me.hwnd, "Open", HelpPath, "", App.Path, 1)
+    End If
 End Sub
 
 ' Language -> JScript Menu Click Event Handler
@@ -838,8 +865,8 @@ Public Function OpenFile(FileName As String) As Boolean
         Close F
         ' Put it into Text Box
         ' Only works properly under NT\2000\XP
-        Call SendMessage(TextMain(CurrentTextBox).hWnd, WM_SETTEXT, 0&, ByVal S)
-        Call SetWindowText(TextMain(CurrentTextBox).hWnd, S)
+        Call SendMessage(TextMain(CurrentTextBox).hwnd, WM_SETTEXT, 0&, ByVal S)
+        Call SetWindowText(TextMain(CurrentTextBox).hwnd, S)
         OpenFile = True
         ' Update the file path
         FilePath = FileName
