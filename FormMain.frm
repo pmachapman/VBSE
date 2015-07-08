@@ -114,7 +114,7 @@ Begin VB.Form FormMain
          Caption         =   "-"
       End
       Begin VB.Menu MenuFilePrint 
-         Caption         =   "&Print"
+         Caption         =   "&Print..."
          Shortcut        =   ^P
       End
       Begin VB.Menu MenuFileSeparator1 
@@ -225,6 +225,34 @@ Begin VB.Form FormMain
       End
       Begin VB.Menu MenuHelpAbout 
          Caption         =   "&About"
+      End
+   End
+   Begin VB.Menu MenuPopup 
+      Caption         =   "&Right Click Popup"
+      Visible         =   0   'False
+      Begin VB.Menu MenuPopupUndo 
+         Caption         =   "&Undo"
+      End
+      Begin VB.Menu MenuPopupSeparator1 
+         Caption         =   "-"
+      End
+      Begin VB.Menu MenuPopupCut 
+         Caption         =   "Cu&t"
+      End
+      Begin VB.Menu MenuPopupCopy 
+         Caption         =   "&Copy"
+      End
+      Begin VB.Menu MenuPopupPaste 
+         Caption         =   "&Paste"
+      End
+      Begin VB.Menu MenuPopupDelete 
+         Caption         =   "&Delete"
+      End
+      Begin VB.Menu MenuPopupSeparator2 
+         Caption         =   "-"
+      End
+      Begin VB.Menu MenuPopupSelectAll 
+         Caption         =   "&Select All"
       End
    End
 End
@@ -756,7 +784,7 @@ Private Sub MenuFilePrint_Click()
     ' Show the printer dialog
     On Error GoTo NoPrinting
     CommonDialogMain.CancelError = True
-    CommonDialogMain.Flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
+    CommonDialogMain.flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
     CommonDialogMain.PrinterDefault = True
     CommonDialogMain.ShowPrinter
     ' Print
@@ -788,7 +816,7 @@ Private Sub MenuFormatFont_Click()
     CommonDialogMain.FontUnderline = TextMain(CurrentTextBox).FontUnderline
     CommonDialogMain.FontStrikethru = TextMain(CurrentTextBox).FontStrikethru
     CommonDialogMain.CancelError = False
-    CommonDialogMain.Flags = cdlCFANSIOnly + cdlCFBoth
+    CommonDialogMain.flags = cdlCFANSIOnly + cdlCFBoth
     ' Show the font dialog
     On Error GoTo CancelFont
     CommonDialogMain.ShowFont
@@ -881,6 +909,46 @@ Private Sub MenuLanguageVBScript_Click()
     ScriptMain.language = "VBScript"
     InitialiseScripting
     LabelLanguage.Caption = "VBScript"
+End Sub
+
+' Popup Menu Click Event Handler
+Private Sub MenuPopup_Click()
+    ' Disable/Enable the menu items as required
+    MenuPopupUndo.Enabled = UndoText <> TextMain(CurrentTextBox).Text
+    MenuPopupCut.Enabled = TextMain(CurrentTextBox).SelLength > 0
+    MenuPopupCopy.Enabled = TextMain(CurrentTextBox).SelLength > 0
+    MenuPopupPaste.Enabled = Clipboard.GetFormat(vbCFText) And Len(Clipboard.GetText()) > 0
+    MenuPopupDelete.Enabled = TextMain(CurrentTextBox).SelLength > 0
+End Sub
+
+' Popup -> Copy Menu Click Event Handler
+Private Sub MenuPopupCopy_Click()
+    MenuEditCopy_Click
+End Sub
+
+' Popup -> Cut Menu Click Event Handler
+Private Sub MenuPopupCut_Click()
+    MenuEditCut_Click
+End Sub
+
+' Popup -> Delete Menu Click Event Handler
+Private Sub MenuPopupDelete_Click()
+    MenuEditDelete_Click
+End Sub
+
+' Popup -> Paste Menu Click Event Handler
+Private Sub MenuPopupPaste_Click()
+    MenuEditPaste_Click
+End Sub
+
+' Popup -> Select All Menu Click Event Handler
+Private Sub MenuPopupSelectAll_Click()
+    MenuEditSelectAll_Click
+End Sub
+
+' Popup -> Undo Menu Click Event Handler
+Private Sub MenuPopupUndo_Click()
+    MenuEditUndo_Click
 End Sub
 
 ' Start -> Run Menu Click Event Handler
@@ -1152,7 +1220,7 @@ Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Int
         TextMain(Index).Enabled = True
         TextMain(Index).SetFocus
         ' Show the custom menu
-        PopupMenu MenuEdit
+        PopupMenu MenuPopup
     ElseIf Button = vbLeftButton Then
         ' Update the status bar
         GetCursorCoordinates
