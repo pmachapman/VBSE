@@ -952,6 +952,13 @@ Private Sub SaveMRUFileList()
         ' Write MRU to registry with key as its position in list
         SaveSetting "Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), MenuFileMRU(i).Caption
     Next i
+    ' Loop through any missing MRU
+    On Error GoTo NoMoreToDelete
+    For i = MRUCount + 1 To MaxMRU - 1
+        ' Delete the removed MRU item
+        DeleteSetting "Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i))
+    Next i
+NoMoreToDelete:
 End Sub
 
 ' Scripting Error Handler
