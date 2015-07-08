@@ -302,8 +302,11 @@ Private Sub Form_Activate()
         TextMain(CurrentTextBox).SelStart = TextMain(1).SelStart
         TextMain(CurrentTextBox).SelLength = TextMain(1).SelLength
     End If
+    ' Set focus throws error 5 if the console has focus
+    On Error Resume Next
     TextMain(CurrentTextBox).SetFocus
     TextMain(CurrentTextBox).ZOrder
+    On Error GoTo 0
     ' Enable/Disable the Go To... menu if word wrapper
     MenuEditGoto.Enabled = Not MenuFormatWordWrap.Checked
     ' Hide the status bar menu and status bar if word wrapped
