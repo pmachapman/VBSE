@@ -42,8 +42,18 @@ Begin VB.Form FormMain
       TabIndex        =   1
       Top             =   2640
       Width           =   3255
+      Begin VB.Label LabelLanguage 
+         BackStyle       =   0  'Transparent
+         Height          =   255
+         Left            =   50
+         TabIndex        =   4
+         Top             =   0
+         Width           =   1815
+      End
       Begin VB.Label LabelStatus 
          Alignment       =   1  'Right Justify
+         BackStyle       =   0  'Transparent
+         Caption         =   "Ln 1, Col 1"
          Height          =   255
          Left            =   0
          TabIndex        =   2
@@ -434,6 +444,7 @@ Private Sub Form_Resize()
         PictureStatus.Left = 0
         PictureStatus.Width = Me.ScaleWidth
         LabelStatus.Width = PictureStatus.ScaleWidth - 100
+        LabelLanguage.Width = LabelStatus.Width
         ' The text box fills the entire window, less the status bar
         TextMain(0).Width = Me.ScaleWidth
         TextMain(0).Height = Me.ScaleHeight - PictureStatus.Height
@@ -445,6 +456,12 @@ Private Sub Form_Resize()
     ' Set the other text box's dimensions
     TextMain(1).Width = TextMain(0).Width
     TextMain(1).Height = TextMain(0).Height
+    ' Show/Hide the language label
+    If Me.ScaleWidth > 150 Then
+        LabelLanguage.Visible = True
+    Else
+        LabelLanguage.Visible = False
+    End If
 End Sub
 
 ' Form Unload Event Handler
@@ -500,7 +517,7 @@ Private Sub GetCursorCoordinates()
         LineNumber = SendMessage(TextMain(CurrentTextBox).hwnd, EM_EXLINEFROMCHAR, -1, ByVal 0&)
         Column = SendMessage(TextMain(CurrentTextBox).hwnd, EM_LINEINDEX, ByVal LineNumber, ByVal CLng(0))
         ' Update the status bar
-        LabelStatus.Caption = "Line " + CStr(LineNumber + 1) & ", Column " & CStr(Start - Column + 1)
+        LabelStatus.Caption = "Ln " + CStr(LineNumber + 1) & ", Col " & CStr(Start - Column + 1)
     End If
 End Sub
 
@@ -816,6 +833,7 @@ Private Sub MenuLanguageJScript_Click()
     MenuRun.Enabled = True
     ScriptMain.language = "JScript"
     InitialiseScripting
+    LabelLanguage.Caption = "JScript"
 End Sub
 
 ' Language -> Text Menu Click Event Handler
@@ -824,6 +842,7 @@ Public Sub MenuLanguageText_Click()
     MenuLanguageText.Checked = True
     MenuLanguageVBScript.Checked = False
     MenuRun.Enabled = False
+    LabelLanguage.Caption = "Text"
 End Sub
 
 ' Language -> VBScript Menu Click Event Handler
@@ -834,6 +853,7 @@ Private Sub MenuLanguageVBScript_Click()
     MenuRun.Enabled = True
     ScriptMain.language = "VBScript"
     InitialiseScripting
+    LabelLanguage.Caption = "VBScript"
 End Sub
 
 ' Start -> Run Menu Click Event Handler
