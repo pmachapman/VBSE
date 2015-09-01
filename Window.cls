@@ -3,8 +3,10 @@ BEGIN
   MultiUse = -1  'True
 END
 Attribute VB_Name = "Window"
+Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
-Attribute VB_Exposed = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
 ' Require Variable Declaration
 Option Explicit
 

@@ -1,18 +1,15 @@
-VERSION 4.00
+VERSION 5.00
 Begin VB.Form FormConsole 
    Caption         =   "Console"
    ClientHeight    =   3000
    ClientLeft      =   1215
    ClientTop       =   5625
    ClientWidth     =   5910
-   Height          =   3510
    Icon            =   "FormConsole.frx":0000
-   Left            =   1155
    LinkTopic       =   "Console"
+   PaletteMode     =   1  'UseZOrder
    ScaleHeight     =   3000
    ScaleWidth      =   5910
-   Top             =   5175
-   Width           =   6030
    Begin VB.TextBox TextOutput 
       BorderStyle     =   0  'None
       Height          =   3015
@@ -44,7 +41,9 @@ Begin VB.Form FormConsole
    End
 End
 Attribute VB_Name = "FormConsole"
+Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' Require variable declaration
 Option Explicit
@@ -89,7 +88,7 @@ End Sub
 
 ' Edit -> Copy Menu Click Event Handler
 Private Sub MenuEditCopy_Click()
-    Clipboard.clear
+    Clipboard.Clear
     Clipboard.SetText TextOutput.SelText
 End Sub
 

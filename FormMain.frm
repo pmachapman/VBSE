@@ -1,22 +1,21 @@
-VERSION 4.00
+VERSION 5.00
+Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
 Begin VB.Form FormMain 
    Caption         =   "Very Basic Script Editor"
    ClientHeight    =   2910
    ClientLeft      =   2370
    ClientTop       =   4515
    ClientWidth     =   6000
-   Height          =   3720
    Icon            =   "FormMain.frx":0000
-   Left            =   2310
    LinkTopic       =   "Main"
    LockControls    =   -1  'True
+   PaletteMode     =   1  'UseZOrder
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   400
-   Top             =   3765
-   Width           =   6120
    Begin VB.TextBox TextMain 
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+      BeginProperty Font 
          Name            =   "Lucida Console"
          Size            =   9.75
          Charset         =   0
@@ -64,7 +63,7 @@ Begin VB.Form FormMain
       End
    End
    Begin VB.TextBox TextMain 
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+      BeginProperty Font 
          Name            =   "Lucida Console"
          Size            =   9.75
          Charset         =   0
@@ -260,7 +259,9 @@ Begin VB.Form FormMain
    End
 End
 Attribute VB_Name = "FormMain"
+Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 ' Require Variable Declaration
 Option Explicit
