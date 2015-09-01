@@ -31,6 +31,7 @@ Begin VB.Form FormMain
       MultiLine       =   -1  'True
       ScrollBars      =   2  'Vertical
       TabIndex        =   3
+      TabStop         =   0   'False
       Top             =   240
       Width           =   3855
    End
@@ -40,6 +41,7 @@ Begin VB.Form FormMain
       ScaleHeight     =   195
       ScaleWidth      =   3195
       TabIndex        =   1
+      TabStop         =   0   'False
       Top             =   2640
       Width           =   3255
       Begin VB.Label LabelLanguage 
@@ -77,6 +79,7 @@ Begin VB.Form FormMain
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Both
       TabIndex        =   0
+      TabStop         =   0   'False
       Top             =   0
       Width           =   3855
    End
@@ -784,7 +787,7 @@ Private Sub MenuFilePrint_Click()
     ' Show the printer dialog
     On Error GoTo NoPrinting
     CommonDialogMain.CancelError = True
-    CommonDialogMain.flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
+    CommonDialogMain.Flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
     CommonDialogMain.PrinterDefault = True
     CommonDialogMain.ShowPrinter
     ' Print
@@ -816,7 +819,7 @@ Private Sub MenuFormatFont_Click()
     CommonDialogMain.FontUnderline = TextMain(CurrentTextBox).FontUnderline
     CommonDialogMain.FontStrikethru = TextMain(CurrentTextBox).FontStrikethru
     CommonDialogMain.CancelError = False
-    CommonDialogMain.flags = cdlCFANSIOnly + cdlCFBoth
+    CommonDialogMain.Flags = cdlCFANSIOnly + cdlCFBoth
     ' Show the font dialog
     On Error GoTo CancelFont
     CommonDialogMain.ShowFont
