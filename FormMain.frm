@@ -10,6 +10,7 @@ Begin VB.Form FormMain
    Icon            =   "FormMain.frx":0000
    LinkTopic       =   "Main"
    LockControls    =   -1  'True
+   OLEDropMode     =   1  'Manual
    PaletteMode     =   1  'UseZOrder
    ScaleHeight     =   194
    ScaleMode       =   3  'Pixel
@@ -28,6 +29,7 @@ Begin VB.Form FormMain
       Index           =   1
       Left            =   480
       MultiLine       =   -1  'True
+      OLEDropMode     =   1  'Manual
       ScrollBars      =   2  'Vertical
       TabIndex        =   3
       TabStop         =   0   'False
@@ -76,6 +78,7 @@ Begin VB.Form FormMain
       Index           =   0
       Left            =   0
       MultiLine       =   -1  'True
+      OLEDropMode     =   1  'Manual
       ScrollBars      =   3  'Both
       TabIndex        =   0
       TabStop         =   0   'False
@@ -441,15 +444,21 @@ Private Sub Form_Load()
     Form_Resize
 End Sub
 
-' Form OLE Drag Drop Event Handler
-' Requires Visual Basic 5
-'Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, Y As Single)
-'    If Data.GetFormat(vbCFFiles) = True Then
-'        If Not OpenFile(Data.Files.Item(1)) Then
-'            MsgBox Data.Files.Item(1) & " is invalid and cannot be opened.", vbExclamation, "Open"
-'        End If
-'    End If
-'End Sub
+' Form OLE Drag and Drop Event Handler
+Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+    If Data.GetFormat(vbCFFiles) Then
+        If Not OpenFile(Data.Files.Item(1)) Then
+            MsgBox Data.Files.Item(1) & " is invalid and cannot be opened.", vbExclamation, "Open"
+        End If
+    ElseIf Data.GetFormat(vbCFText) Then
+        ' Store the undo value
+        UndoStart = TextMain(CurrentTextBox).SelStart
+        UndoLength = TextMain(CurrentTextBox).SelLength
+        UndoText = TextMain(CurrentTextBox).Text
+        ' Replace the selected text with the clipboard
+        TextMain(CurrentTextBox).SelText = Data.GetData(vbCFText)
+    End If
+End Sub
 
 ' Form Query Unload Event Handler
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
@@ -1229,6 +1238,11 @@ Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Int
         ' Update the status bar
         GetCursorCoordinates
     End If
+End Sub
+
+' Textbox OLE Drag and Drop Event Handler
+Private Sub TextMain_OLEDragDrop(Index As Integer, Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Form_OLEDragDrop Data, Effect, Button, Shift, X, Y
 End Sub
 
 ' Updates the language manu based on the open file
