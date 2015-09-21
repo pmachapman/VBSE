@@ -721,14 +721,29 @@ End Sub
 
 ' File -> MRU Menu Click Event Handler
 Private Sub MenuFileMRU_Click(Index As Integer)
-    ' Open the file
-    If Dir(MenuFileMRU(Index).Caption) = "" Then
-        If MsgBox(MenuFileMRU(Index).Caption & " could not be not found." & vbCrLf & vbCrLf & "Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
-            RemoveMenuElement MenuFileMRU(Index).Caption
+    ' Get the file name
+    Dim FileName As String
+    FileName = MenuFileMRU(Index).Caption
+    ' See if the file exists
+    If Dir(FileName) = "" Then
+        If MsgBox(FileName & " could not be not found." & vbCrLf & vbCrLf & "Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement FileName
         End If
-    ElseIf Not OpenFile(MenuFileMRU(Index).Caption) Then
-        If MsgBox(MenuFileMRU(Index).Caption & " is invalid and cannot be opened." & vbCrLf & "vbCrLf & Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
-            RemoveMenuElement MenuFileMRU(Index).Caption
+        Exit Sub
+    End If
+    ' Show the save prompt if the text has changed
+    If TextChanged And Not (TextMain(CurrentTextBox).Text = "" And FilePath = "Untitled") Then
+        Select Case MsgBox("The text in the file " & FilePath & " has changed." & vbCrLf & vbCrLf & "Do you want to save the changes?", vbYesNoCancel + vbExclamation, App.Title)
+            Case vbYes
+                MenuFileSave_Click
+            Case vbCancel
+                Exit Sub
+        End Select
+    End If
+    ' Open the file
+    If Not OpenFile(FileName) Then
+        If MsgBox(FileName & " is invalid and cannot be opened." & vbCrLf & "vbCrLf & Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement FileName
         End If
     End If
 End Sub
@@ -780,11 +795,11 @@ Private Sub MenuFileOpen_Click()
     ' Show the dialog
     On Error GoTo CancelOpen
     CommonDialogMain.ShowOpen
-    If CommonDialogMain.Filename <> "" Then
-        If Dir(CommonDialogMain.Filename) = "" Then
-            MsgBox CommonDialogMain.Filename & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
-        ElseIf Not OpenFile(CommonDialogMain.Filename) Then
-            MsgBox CommonDialogMain.Filename & " is invalid and cannot be opened.", vbExclamation, "Open"
+    If CommonDialogMain.FileName <> "" Then
+        If Dir(CommonDialogMain.FileName) = "" Then
+            MsgBox CommonDialogMain.FileName & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
+        ElseIf Not OpenFile(CommonDialogMain.FileName) Then
+            MsgBox CommonDialogMain.FileName & " is invalid and cannot be opened.", vbExclamation, "Open"
         End If
     End If
 CancelOpen:
@@ -989,14 +1004,14 @@ Private Sub MenuViewStatusBar_Click()
 End Sub
 
 ' Open File Function
-Public Function OpenFile(Filename As String) As Boolean
+Public Function OpenFile(FileName As String) As Boolean
     On Error GoTo OpenFileError
     Dim F As Integer
     Dim s As String
-    If Filename <> "" Then
+    If FileName <> "" Then
         ' Get Text into Memory
         F = FreeFile
-        Open Filename For Input As F
+        Open FileName For Input As F
         s = Input$(LOF(F), F)
         Close F
         ' Put it into Text Box
@@ -1005,7 +1020,7 @@ Public Function OpenFile(Filename As String) As Boolean
         Call SetWindowText(TextMain(CurrentTextBox).hwnd, s)
         OpenFile = True
         ' Update the file path
-        FilePath = Filename
+        FilePath = FileName
         ' Handle the file language
         UpdateFileLanguage
         ' Update the window caption
@@ -1152,12 +1167,12 @@ Private Sub SaveFile(SaveAs As Boolean)
         On Error GoTo CancelSave
         CommonDialogMain.ShowSave
         ' Take action based on the dialog's result
-        If CommonDialogMain.Filename = "" Then
+        If CommonDialogMain.FileName = "" Then
             Exit Sub
-        ElseIf Dir(CommonDialogMain.Filename) = "" Then
-            FilePath = CommonDialogMain.Filename
-        ElseIf MsgBox(CommonDialogMain.Filename & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
-            FilePath = CommonDialogMain.Filename
+        ElseIf Dir(CommonDialogMain.FileName) = "" Then
+            FilePath = CommonDialogMain.FileName
+        ElseIf MsgBox(CommonDialogMain.FileName & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
+            FilePath = CommonDialogMain.FileName
         Else
             Exit Sub
         End If
