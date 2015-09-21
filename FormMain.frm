@@ -1,6 +1,5 @@
 VERSION 5.00
 Object = "{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}#1.0#0"; "msscript.ocx"
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
 Begin VB.Form FormMain 
    Caption         =   "Very Basic Script Editor"
    ClientHeight    =   2910
@@ -84,13 +83,6 @@ Begin VB.Form FormMain
       TabStop         =   0   'False
       Top             =   0
       Width           =   3855
-   End
-   Begin MSComDlg.CommonDialog CommonDialogMain 
-      Left            =   4560
-      Top             =   960
-      _ExtentX        =   847
-      _ExtentY        =   847
-      _Version        =   393216
    End
    Begin MSScriptControlCtl.ScriptControl ScriptMain 
       Left            =   4560
@@ -284,6 +276,13 @@ Private Const MaxMRU = 4    ' Maximum number of MRUs in list (-1 for no limit)
 Private Const NotFound = -1 ' Indicates a duplicate entry was not found
 Private Const NoMRUs = -1   ' Indicates no MRUs are currently defined
 Private MRUCount As Long    ' Maintains a count of MRUs defined
+' Common Dialog Support
+Dim CommonDialogMain As cCommonDialog
+Const cdlPDNoPageNums As Long = &H8
+Const cdlPDHidePrintToFile As Long = &H100000
+Const cdlPDNoSelection As Long = &H4
+Const cdlCFANSIOnly As Long = &H400
+Const cdlCFBoth As Long = &H3
 
 ' Add Menu Item Routine
 Private Sub AddMenuElement(NewItem As String)
@@ -390,6 +389,8 @@ End Sub
 
 ' Form Load Event Handler
 Private Sub Form_Load()
+    ' Create the common dialog
+    Set CommonDialogMain = New cCommonDialog
     ' Set the file path
     FilePath = "Untitled"
     ' Set the window caption
@@ -445,7 +446,7 @@ Private Sub Form_Load()
 End Sub
 
 ' Form OLE Drag and Drop Event Handler
-Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
     If Data.GetFormat(vbCFFiles) Then
         If Not OpenFile(Data.Files.Item(1)) Then
             MsgBox Data.Files.Item(1) & " is invalid and cannot be opened.", vbExclamation, "Open"
@@ -779,11 +780,11 @@ Private Sub MenuFileOpen_Click()
     ' Show the dialog
     On Error GoTo CancelOpen
     CommonDialogMain.ShowOpen
-    If CommonDialogMain.FileName <> "" Then
-        If Dir(CommonDialogMain.FileName) = "" Then
-            MsgBox CommonDialogMain.FileName & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
-        ElseIf Not OpenFile(CommonDialogMain.FileName) Then
-            MsgBox CommonDialogMain.FileName & " is invalid and cannot be opened.", vbExclamation, "Open"
+    If CommonDialogMain.Filename <> "" Then
+        If Dir(CommonDialogMain.Filename) = "" Then
+            MsgBox CommonDialogMain.Filename & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
+        ElseIf Not OpenFile(CommonDialogMain.Filename) Then
+            MsgBox CommonDialogMain.Filename & " is invalid and cannot be opened.", vbExclamation, "Open"
         End If
     End If
 CancelOpen:
@@ -797,11 +798,10 @@ Private Sub MenuFilePrint_Click()
     ' Show the printer dialog
     On Error GoTo NoPrinting
     CommonDialogMain.CancelError = True
-    CommonDialogMain.Flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
+    CommonDialogMain.flags = cdlPDNoPageNums + cdlPDHidePrintToFile + cdlPDNoSelection
     CommonDialogMain.PrinterDefault = True
     CommonDialogMain.ShowPrinter
     ' Print
-    Printer.Orientation = CommonDialogMain.Orientation
     NumCopies = CommonDialogMain.Copies
     For i = 1 To NumCopies
         PrintText
@@ -829,7 +829,7 @@ Private Sub MenuFormatFont_Click()
     CommonDialogMain.FontUnderline = TextMain(CurrentTextBox).FontUnderline
     CommonDialogMain.FontStrikethru = TextMain(CurrentTextBox).FontStrikethru
     CommonDialogMain.CancelError = False
-    CommonDialogMain.Flags = cdlCFANSIOnly + cdlCFBoth
+    CommonDialogMain.flags = cdlCFANSIOnly + cdlCFBoth
     ' Show the font dialog
     On Error GoTo CancelFont
     CommonDialogMain.ShowFont
@@ -989,29 +989,29 @@ Private Sub MenuViewStatusBar_Click()
 End Sub
 
 ' Open File Function
-Public Function OpenFile(FileName As String) As Boolean
+Public Function OpenFile(Filename As String) As Boolean
     On Error GoTo OpenFileError
     Dim F As Integer
-    Dim S As String
-    If FileName <> "" Then
+    Dim s As String
+    If Filename <> "" Then
         ' Get Text into Memory
         F = FreeFile
-        Open FileName For Input As F
-        S = Input$(LOF(F), F)
+        Open Filename For Input As F
+        s = Input$(LOF(F), F)
         Close F
         ' Put it into Text Box
         ' Only works properly under NT\2000\XP
-        Call SendMessage(TextMain(CurrentTextBox).hwnd, WM_SETTEXT, 0&, ByVal S)
-        Call SetWindowText(TextMain(CurrentTextBox).hwnd, S)
+        Call SendMessage(TextMain(CurrentTextBox).hwnd, WM_SETTEXT, 0&, ByVal s)
+        Call SetWindowText(TextMain(CurrentTextBox).hwnd, s)
         OpenFile = True
         ' Update the file path
-        FilePath = FileName
+        FilePath = Filename
         ' Handle the file language
         UpdateFileLanguage
         ' Update the window caption
         Me.Caption = GetFileNameFromPath(FilePath) & " - " & App.Title & " " & App.Major & "." & App.Minor
         ' Reset the undo and changed values
-        UndoText = S
+        UndoText = s
         UndoStart = 0
         UndoLength = 0
         TextChanged = False
@@ -1140,21 +1140,24 @@ Private Sub SaveFile(SaveAs As Boolean)
         CommonDialogMain.Filter = "All Files (*.*)|*.*|JScript Files (*.js)|*.js|Text Files (*.txt)|*.txt|VBScript Files (*.vbs)|*.vbs|"
         If MenuLanguageJScript.Checked Then
             CommonDialogMain.FilterIndex = 2
+            CommonDialogMain.DefaultExt = ".js"
         ElseIf MenuLanguageText.Checked Then
             CommonDialogMain.FilterIndex = 3
+            CommonDialogMain.DefaultExt = ".txt"
         Else
             CommonDialogMain.FilterIndex = 4
+            CommonDialogMain.DefaultExt = ".vbs"
         End If
         ' Show the dialog
         On Error GoTo CancelSave
         CommonDialogMain.ShowSave
         ' Take action based on the dialog's result
-        If CommonDialogMain.FileName = "" Then
+        If CommonDialogMain.Filename = "" Then
             Exit Sub
-        ElseIf Dir(CommonDialogMain.FileName) = "" Then
-            FilePath = CommonDialogMain.FileName
-        ElseIf MsgBox(CommonDialogMain.FileName & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
-            FilePath = CommonDialogMain.FileName
+        ElseIf Dir(CommonDialogMain.Filename) = "" Then
+            FilePath = CommonDialogMain.Filename
+        ElseIf MsgBox(CommonDialogMain.Filename & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
+            FilePath = CommonDialogMain.Filename
         Else
             Exit Sub
         End If
@@ -1222,7 +1225,7 @@ Private Sub TextMain_KeyDown(Index As Integer, KeyCode As Integer, Shift As Inte
 End Sub
 
 ' Textbox Mouse Down Event Handler
-Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Integer, x As Single, y As Single)
     ' If the right mouse button
     If Button = vbRightButton Then
         ' Disable the textbox
@@ -1241,8 +1244,8 @@ Private Sub TextMain_MouseDown(Index As Integer, Button As Integer, Shift As Int
 End Sub
 
 ' Textbox OLE Drag and Drop Event Handler
-Private Sub TextMain_OLEDragDrop(Index As Integer, Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Form_OLEDragDrop Data, Effect, Button, Shift, X, Y
+Private Sub TextMain_OLEDragDrop(Index As Integer, Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+    Form_OLEDragDrop Data, Effect, Button, Shift, x, y
 End Sub
 
 ' Updates the language manu based on the open file
