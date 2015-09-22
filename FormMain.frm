@@ -396,22 +396,22 @@ Private Sub Form_Load()
     ' Set the window caption
     Me.Caption = FilePath & " - " & App.Title & " " & App.Major & "." & App.Minor
     ' Load Settings
-    Me.Left = CLng(GetSetting("Peter Chapman", "VBSE", "Left", Me.Left))
-    Me.Top = CLng(GetSetting("Peter Chapman", "VBSE", "Top", Me.Top))
-    Me.Width = CLng(GetSetting("Peter Chapman", "VBSE", "Width", Me.Width))
-    Me.Height = CLng(GetSetting("Peter Chapman", "VBSE", "Height", Me.Height))
-    Me.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "WindowState", Me.WindowState))
-    MenuFormatWordWrap.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked))
-    MenuViewConsole.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "Console", MenuViewConsole.Checked))
+    Me.Left = CLng(GetSettingFromIniFile("Window", "Left", Me.Left))
+    Me.Top = CLng(GetSettingFromIniFile("Window", "Top", Me.Top))
+    Me.Width = CLng(GetSettingFromIniFile("Window", "Width", Me.Width))
+    Me.Height = CLng(GetSettingFromIniFile("Window", "Height", Me.Height))
+    Me.WindowState = CLng(GetSettingFromIniFile("Window", "WindowState", Me.WindowState))
+    MenuFormatWordWrap.Checked = CBool(GetSettingFromIniFile("Editor", "WordWrap", MenuFormatWordWrap.Checked))
+    MenuViewConsole.Checked = CBool(GetSettingFromIniFile("Console", "Visible", MenuViewConsole.Checked))
     FormConsole.Visible = MenuViewConsole.Checked
-    FormConsole.Left = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleLeft", FormConsole.Left))
-    FormConsole.Top = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleTop", FormConsole.Top))
-    FormConsole.Width = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleWidth", FormConsole.Width))
-    FormConsole.Height = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleHeight", FormConsole.Height))
-    FormConsole.WindowState = CLng(GetSetting("Peter Chapman", "VBSE", "ConsoleWindowState", FormConsole.WindowState))
-    MenuViewStatusBar.Checked = CBool(GetSetting("Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked))
+    FormConsole.Left = CLng(GetSettingFromIniFile("Console", "Left", FormConsole.Left))
+    FormConsole.Top = CLng(GetSettingFromIniFile("Console", "Top", FormConsole.Top))
+    FormConsole.Width = CLng(GetSettingFromIniFile("Console", "Width", FormConsole.Width))
+    FormConsole.Height = CLng(GetSettingFromIniFile("Console", "Height", FormConsole.Height))
+    FormConsole.WindowState = CLng(GetSettingFromIniFile("Console", "WindowState", FormConsole.WindowState))
+    MenuViewStatusBar.Checked = CBool(GetSettingFromIniFile("Editor", "StatusBar", MenuViewStatusBar.Checked))
     Dim language As String
-    language = CStr(GetSetting("Peter Chapman", "VBSE", "Language", "VBScript"))
+    language = CStr(GetSettingFromIniFile("Editor", "Language", "VBScript"))
     If language = "Text" Then
         MenuLanguageText_Click
     ElseIf language = "JScript" Then
@@ -419,12 +419,12 @@ Private Sub Form_Load()
     Else
         MenuLanguageVBScript_Click
     End If
-    TextMain(0).FontName = CStr(GetSetting("Peter Chapman", "VBSE", "FontName", TextMain(0).FontName))
-    TextMain(0).FontSize = CInt(GetSetting("Peter Chapman", "VBSE", "FontSize", TextMain(0).FontSize))
-    TextMain(0).FontBold = CBool(GetSetting("Peter Chapman", "VBSE", "FontBold", TextMain(0).FontBold))
-    TextMain(0).FontItalic = CBool(GetSetting("Peter Chapman", "VBSE", "FontItalic", TextMain(0).FontItalic))
-    TextMain(0).FontUnderline = CBool(GetSetting("Peter Chapman", "VBSE", "FontUnderline", TextMain(0).FontUnderline))
-    TextMain(0).FontStrikethru = CBool(GetSetting("Peter Chapman", "VBSE", "FontStrikethru", TextMain(0).FontStrikethru))
+    TextMain(0).FontName = CStr(GetSettingFromIniFile("Font", "Name", TextMain(0).FontName))
+    TextMain(0).FontSize = CInt(GetSettingFromIniFile("Font", "Size", TextMain(0).FontSize))
+    TextMain(0).FontBold = CBool(GetSettingFromIniFile("Font", "Bold", TextMain(0).FontBold))
+    TextMain(0).FontItalic = CBool(GetSettingFromIniFile("Font", "Italic", TextMain(0).FontItalic))
+    TextMain(0).FontUnderline = CBool(GetSettingFromIniFile("Font", "Underline", TextMain(0).FontUnderline))
+    TextMain(0).FontStrikethru = CBool(GetSettingFromIniFile("Font", "Strikethru", TextMain(0).FontStrikethru))
     TextMain(1).FontName = TextMain(0).FontName
     TextMain(1).FontSize = TextMain(0).FontSize
     TextMain(1).FontBold = TextMain(0).FontBold
@@ -516,37 +516,37 @@ End Sub
 ' Form Unload Event Handler
 Private Sub Form_Unload(Cancel As Integer)
     ' Save Settings
-    SaveSetting "Peter Chapman", "VBSE", "WindowState", Me.WindowState
+    SaveSettingToIniFile "Window", "WindowState", Me.WindowState
     If Me.WindowState <> vbNormal Then Me.WindowState = vbNormal
-    SaveSetting "Peter Chapman", "VBSE", "Left", Me.Left
-    SaveSetting "Peter Chapman", "VBSE", "Top", Me.Top
-    SaveSetting "Peter Chapman", "VBSE", "Width", Me.Width
-    SaveSetting "Peter Chapman", "VBSE", "Height", Me.Height
-    SaveSetting "Peter Chapman", "VBSE", "WordWrap", MenuFormatWordWrap.Checked
-    SaveSetting "Peter Chapman", "VBSE", "Console", MenuViewConsole.Checked
-    SaveSetting "Peter Chapman", "VBSE", "ConsoleWindowState", FormConsole.WindowState
+    SaveSettingToIniFile "Window", "Left", Me.Left
+    SaveSettingToIniFile "Window", "Top", Me.Top
+    SaveSettingToIniFile "Window", "Width", Me.Width
+    SaveSettingToIniFile "Window", "Height", Me.Height
+    SaveSettingToIniFile "Editor", "WordWrap", MenuFormatWordWrap.Checked
+    SaveSettingToIniFile "Console", "Visible", MenuViewConsole.Checked
+    SaveSettingToIniFile "Console", "WindowState", FormConsole.WindowState
     If FormConsole.WindowState <> vbNormal Then
         If Not FormConsole.Visible Then FormConsole.Show
         FormConsole.WindowState = vbNormal
     End If
-    SaveSetting "Peter Chapman", "VBSE", "ConsoleLeft", FormConsole.Left
-    SaveSetting "Peter Chapman", "VBSE", "ConsoleTop", FormConsole.Top
-    SaveSetting "Peter Chapman", "VBSE", "ConsoleWidth", FormConsole.Width
-    SaveSetting "Peter Chapman", "VBSE", "ConsoleHeight", FormConsole.Height
-    SaveSetting "Peter Chapman", "VBSE", "StatusBar", MenuViewStatusBar.Checked
+    SaveSettingToIniFile "Console", "Left", FormConsole.Left
+    SaveSettingToIniFile "Console", "Top", FormConsole.Top
+    SaveSettingToIniFile "Console", "Width", FormConsole.Width
+    SaveSettingToIniFile "Console", "Height", FormConsole.Height
+    SaveSettingToIniFile "Editor", "StatusBar", MenuViewStatusBar.Checked
     If MenuLanguageText.Checked Then
-        SaveSetting "Peter Chapman", "VBSE", "Language", "Text"
+        SaveSettingToIniFile "Editor", "Language", "Text"
     ElseIf MenuLanguageJScript.Checked Then
-        SaveSetting "Peter Chapman", "VBSE", "Language", "JScript"
+        SaveSettingToIniFile "Editor", "Language", "JScript"
     Else
-        SaveSetting "Peter Chapman", "VBSE", "Language", "VBScript"
+        SaveSettingToIniFile "Editor", "Language", "VBScript"
     End If
-    SaveSetting "Peter Chapman", "VBSE", "FontName", TextMain(CurrentTextBox).FontName
-    SaveSetting "Peter Chapman", "VBSE", "FontSize", TextMain(CurrentTextBox).FontSize
-    SaveSetting "Peter Chapman", "VBSE", "FontBold", TextMain(CurrentTextBox).FontBold
-    SaveSetting "Peter Chapman", "VBSE", "FontItalic", TextMain(CurrentTextBox).FontItalic
-    SaveSetting "Peter Chapman", "VBSE", "FontUnderline", TextMain(CurrentTextBox).FontUnderline
-    SaveSetting "Peter Chapman", "VBSE", "FontStrikethru", TextMain(CurrentTextBox).FontStrikethru
+    SaveSettingToIniFile "Font", "Name", TextMain(CurrentTextBox).FontName
+    SaveSettingToIniFile "Font", "Size", TextMain(CurrentTextBox).FontSize
+    SaveSettingToIniFile "Font", "Bold", TextMain(CurrentTextBox).FontBold
+    SaveSettingToIniFile "Font", "Italic", TextMain(CurrentTextBox).FontItalic
+    SaveSettingToIniFile "Font", "Underline", TextMain(CurrentTextBox).FontUnderline
+    SaveSettingToIniFile "Font", "Strikethru", TextMain(CurrentTextBox).FontStrikethru
     ' Call sub to save the MRU filenames
     SaveMRUFileList
     ' Exit the program
@@ -578,7 +578,7 @@ Private Sub GetMRUFileList()
     ' Loop through all entries
     Do
         ' Retrieve entry from registry
-        result = GetSetting("Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), "")
+        result = GetSettingFromIniFile("MRU", "File" & Trim(CStr(i)), "")
         
         ' Check if a value was returned
         If result <> "" Then
@@ -722,12 +722,12 @@ End Sub
 ' File -> MRU Menu Click Event Handler
 Private Sub MenuFileMRU_Click(Index As Integer)
     ' Get the file name
-    Dim FileName As String
-    FileName = MenuFileMRU(Index).Caption
+    Dim Filename As String
+    Filename = MenuFileMRU(Index).Caption
     ' See if the file exists
-    If Dir(FileName) = "" Then
-        If MsgBox(FileName & " could not be not found." & vbCrLf & vbCrLf & "Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
-            RemoveMenuElement FileName
+    If Dir(Filename) = "" Then
+        If MsgBox(Filename & " could not be not found." & vbCrLf & vbCrLf & "Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement Filename
         End If
         Exit Sub
     End If
@@ -741,9 +741,9 @@ Private Sub MenuFileMRU_Click(Index As Integer)
         End Select
     End If
     ' Open the file
-    If Not OpenFile(FileName) Then
-        If MsgBox(FileName & " is invalid and cannot be opened." & vbCrLf & "vbCrLf & Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
-            RemoveMenuElement FileName
+    If Not OpenFile(Filename) Then
+        If MsgBox(Filename & " is invalid and cannot be opened." & vbCrLf & "vbCrLf & Would you like to remove this item from the menu?", vbQuestion + vbYesNo, "Open") = vbYes Then
+            RemoveMenuElement Filename
         End If
     End If
 End Sub
@@ -795,11 +795,11 @@ Private Sub MenuFileOpen_Click()
     ' Show the dialog
     On Error GoTo CancelOpen
     CommonDialogMain.ShowOpen
-    If CommonDialogMain.FileName <> "" Then
-        If Dir(CommonDialogMain.FileName) = "" Then
-            MsgBox CommonDialogMain.FileName & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
-        ElseIf Not OpenFile(CommonDialogMain.FileName) Then
-            MsgBox CommonDialogMain.FileName & " is invalid and cannot be opened.", vbExclamation, "Open"
+    If CommonDialogMain.Filename <> "" Then
+        If Dir(CommonDialogMain.Filename) = "" Then
+            MsgBox CommonDialogMain.Filename & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
+        ElseIf Not OpenFile(CommonDialogMain.Filename) Then
+            MsgBox CommonDialogMain.Filename & " is invalid and cannot be opened.", vbExclamation, "Open"
         End If
     End If
 CancelOpen:
@@ -1004,14 +1004,14 @@ Private Sub MenuViewStatusBar_Click()
 End Sub
 
 ' Open File Function
-Public Function OpenFile(FileName As String) As Boolean
+Public Function OpenFile(Filename As String) As Boolean
     On Error GoTo OpenFileError
     Dim F As Integer
     Dim s As String
-    If FileName <> "" Then
+    If Filename <> "" Then
         ' Get Text into Memory
         F = FreeFile
-        Open FileName For Input As F
+        Open Filename For Input As F
         s = Input$(LOF(F), F)
         Close F
         ' Put it into Text Box
@@ -1020,7 +1020,7 @@ Public Function OpenFile(FileName As String) As Boolean
         Call SetWindowText(TextMain(CurrentTextBox).hwnd, s)
         OpenFile = True
         ' Update the file path
-        FilePath = FileName
+        FilePath = Filename
         ' Handle the file language
         UpdateFileLanguage
         ' Update the window caption
@@ -1167,12 +1167,12 @@ Private Sub SaveFile(SaveAs As Boolean)
         On Error GoTo CancelSave
         CommonDialogMain.ShowSave
         ' Take action based on the dialog's result
-        If CommonDialogMain.FileName = "" Then
+        If CommonDialogMain.Filename = "" Then
             Exit Sub
-        ElseIf Dir(CommonDialogMain.FileName) = "" Then
-            FilePath = CommonDialogMain.FileName
-        ElseIf MsgBox(CommonDialogMain.FileName & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
-            FilePath = CommonDialogMain.FileName
+        ElseIf Dir(CommonDialogMain.Filename) = "" Then
+            FilePath = CommonDialogMain.Filename
+        ElseIf MsgBox(CommonDialogMain.Filename & " already exists." & vbCrLf & "Do you want to replace it?", vbExclamation + vbYesNo, "Save As") = vbYes Then
+            FilePath = CommonDialogMain.Filename
         Else
             Exit Sub
         End If
@@ -1200,13 +1200,13 @@ Private Sub SaveMRUFileList()
     ' Loop through all MRU
     For i = 0 To MRUCount
         ' Write MRU to registry with key as its position in list
-        SaveSetting "Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i)), MenuFileMRU(i).Caption
+        SaveSettingToIniFile "MRU", "File" & Trim(CStr(i)), MenuFileMRU(i).Caption
     Next i
     ' Loop through any missing MRU
     On Error GoTo NoMoreToDelete
     For i = MRUCount + 1 To MaxMRU - 1
         ' Delete the removed MRU item
-        DeleteSetting "Peter Chapman", "VBSE", "MRUFile" & Trim(CStr(i))
+        DeleteSettingFromIniFile "MRU", "File" & Trim(CStr(i))
     Next i
 NoMoreToDelete:
 End Sub
