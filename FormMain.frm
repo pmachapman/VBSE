@@ -333,10 +333,10 @@ End Sub
 Private Function CheckForDuplicateMRU(ByVal NewItem As String) As Long
     Dim i As Long
     ' Uppercase newitem for string comparisons
-    NewItem = UCase(NewItem)
+    NewItem = UCase$(NewItem)
     ' Check all existing MRUs for duplicate
     For i = 0 To MRUCount
-        If UCase(MenuFileMRU(i).Caption) = NewItem Then
+        If UCase$(MenuFileMRU(i).Caption) = NewItem Then
             ' Duplicate found, return the location of the duplicate
             CheckForDuplicateMRU = i
             ' Stop searching
@@ -578,7 +578,7 @@ Private Sub GetMRUFileList()
     ' Loop through all entries
     Do
         ' Retrieve entry from registry
-        result = GetSettingFromIniFile("MRU", "File" & Trim(CStr(i)), "")
+        result = GetSettingFromIniFile("MRU", "File" & Trim$(CStr(i)), "")
         
         ' Check if a value was returned
         If result <> "" Then
@@ -599,8 +599,8 @@ End Sub
 
 ' Gets the file name from a path
 Function GetFileNameFromPath(ByVal Path As String) As String
-    If Right(Path, 1) <> "\" And Len(Path) > 0 Then
-        GetFileNameFromPath = GetFileNameFromPath(Left(Path, Len(Path) - 1)) + Right(Path, 1)
+    If Right$(Path, 1) <> "\" And Len(Path) > 0 Then
+        GetFileNameFromPath = GetFileNameFromPath(Left$(Path, Len(Path) - 1)) + Right$(Path, 1)
     End If
 End Function
 
@@ -888,7 +888,7 @@ Private Sub MenuHelpScript_Click()
     ' Get the path to the help file
     Dim HelpPath As String
     HelpPath = App.Path
-    If Right(HelpPath, 1) <> "\" Then
+    If Right$(HelpPath, 1) <> "\" Then
         HelpPath = HelpPath & "\"
     End If
     HelpPath = HelpPath & "script56.chm"
@@ -1200,13 +1200,13 @@ Private Sub SaveMRUFileList()
     ' Loop through all MRU
     For i = 0 To MRUCount
         ' Write MRU to registry with key as its position in list
-        SaveSettingToIniFile "MRU", "File" & Trim(CStr(i)), MenuFileMRU(i).Caption
+        SaveSettingToIniFile "MRU", "File" & Trim$(CStr(i)), MenuFileMRU(i).Caption
     Next i
     ' Loop through any missing MRU
     On Error GoTo NoMoreToDelete
     For i = MRUCount + 1 To MaxMRU - 1
         ' Delete the removed MRU item
-        DeleteSettingFromIniFile "MRU", "File" & Trim(CStr(i))
+        DeleteSettingFromIniFile "MRU", "File" & Trim$(CStr(i))
     Next i
 NoMoreToDelete:
 End Sub
@@ -1267,9 +1267,9 @@ End Sub
 Private Sub UpdateFileLanguage()
     If FilePath = "Untitled" Then
         Exit Sub
-    ElseIf Len(FilePath) > 4 And LCase(Right(FilePath, 4)) = ".vbs" Then
+    ElseIf Len(FilePath) > 4 And LCase$(Right$(FilePath, 4)) = ".vbs" Then
         MenuLanguageVBScript_Click
-    ElseIf Len(FilePath) > 3 And LCase(Right(FilePath, 3)) = ".js" Then
+    ElseIf Len(FilePath) > 3 And LCase$(Right$(FilePath, 3)) = ".js" Then
         MenuLanguageJScript_Click
     Else
         MenuLanguageText_Click

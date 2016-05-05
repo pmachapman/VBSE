@@ -121,7 +121,7 @@ Private Sub TextOutput_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 ' Output Textbox Mouse Down Event Handler
-Private Sub TextOutput_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub TextOutput_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
     ' If the right mouse button
     If Button = vbRightButton Then
         ' Disable the textbox

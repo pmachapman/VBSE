@@ -763,7 +763,7 @@ Public Property Let HookDialog(ByVal bHook As Boolean)
 End Property
 Private Function ApiError(ByVal e As Long) As String
     Dim s As String, c As Long
-    s = String(256, 0)
+    s = String$(256, 0)
     c = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM Or _
                       FORMAT_MESSAGE_IGNORE_INSERTS, _
                       0, e, 0&, s, Len(s), ByVal 0)

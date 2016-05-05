@@ -32,7 +32,7 @@ Dim IniFile As String
 Public Sub Main()
     ' Set the INI File Name
     IniFile = App.Path
-    If Right(App.Path, 1) <> "\" Then IniFile = IniFile & "\"
+    If Right$(App.Path, 1) <> "\" Then IniFile = IniFile & "\"
     IniFile = IniFile & "VBSE.ini"
     ' Load the editor
     Load FormMain
@@ -41,8 +41,8 @@ Public Sub Main()
         Dim FilePath As String
         FilePath = Command
         ' Strip double quotes if present
-        If Left(FilePath, 1) = """" Then FilePath = Right(FilePath, Len(FilePath) - 1)
-        If Right(FilePath, 1) = """" Then FilePath = Left(FilePath, Len(FilePath) - 1)
+        If Left$(FilePath, 1) = """" Then FilePath = Right$(FilePath, Len(FilePath) - 1)
+        If Right$(FilePath, 1) = """" Then FilePath = Left$(FilePath, Len(FilePath) - 1)
         If Dir(FilePath) = "" Then
             MsgBox FilePath & vbCrLf & "File not found." & vbCrLf & "Please verify the correct file name was given.", vbExclamation, "Open"
         ElseIf Not FormMain.OpenFile(FilePath) Then
@@ -60,7 +60,7 @@ Public Function GetSettingFromIniFile(Section As String, KeyName As String, Defa
     Dim ReturnValueLength As Long
     ' Get the setting from the INI file
     ReturnValueLength = GetPrivateProfileString(Section, KeyName, DefaultValue, ReturnValue, Len(ReturnValue), IniFile)
-    GetSettingFromIniFile = Left(ReturnValue, ReturnValueLength)
+    GetSettingFromIniFile = Left$(ReturnValue, ReturnValueLength)
 End Function
 
 ' Saves a setting to the INI file
