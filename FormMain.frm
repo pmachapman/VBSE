@@ -637,8 +637,12 @@ End Sub
 
 ' Edit -> Copy Menu Click Event Handler
 Private Sub MenuEditCopy_Click()
+    On Error GoTo NoCopy
     Clipboard.Clear
     Clipboard.SetText TextMain(CurrentTextBox).SelText
+    Exit Sub
+NoCopy:
+    MsgBox "Cannot Copy Text To Clipboard - Please Try Again", vbExclamation, "Clipboard"
 End Sub
 
 ' Edit -> Cut Menu Click Event Handler
