@@ -695,6 +695,7 @@ End Sub
 ' Edit -> Select All Menu Click Event Handler
 Private Sub MenuEditSelectAll_Click()
     ' Select all text
+    On Error Resume Next
     TextMain(CurrentTextBox).SelStart = 0
     TextMain(CurrentTextBox).SelLength = Len(TextMain(CurrentTextBox).Text)
 End Sub

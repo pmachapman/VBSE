@@ -48,19 +48,30 @@ Attribute VB_Exposed = False
 ' Require variable declaration
 Option Explicit
 
+' Cache the output so we can have more than 64KB
+Dim Output As String
+
 ' Logs the specified message
 Public Sub log(message As Variant)
-    If Len(TextOutput.Text) = 0 Then
-        TextOutput.Text = message
+    ' Updated the cached output
+    If Len(Output) = 0 Then
+        Output = message
     Else
-        TextOutput.Text = TextOutput.Text & vbCrLf & message
+        Output = Output & vbCrLf & message
     End If
+    ' Write it to the text box
+    Call SendMessage(TextOutput.hwnd, WM_SETTEXT, 0&, ByVal Output)
+    Call SetWindowText(TextOutput.hwnd, Output)
+    ' Move the cursor to the end
+    On Error Resume Next
     TextOutput.SelStart = Len(TextOutput.Text)
     TextOutput.SelLength = 0
 End Sub
 
 ' Form Activate Event Handler
 Private Sub Form_Activate()
+    ' Move the cursor to the end
+    On Error Resume Next
     TextOutput.SelStart = Len(TextOutput.Text)
     TextOutput.SelLength = 0
 End Sub
@@ -83,6 +94,7 @@ End Sub
 
 ' Edit -> Clear Console Menu Click Event Handler
 Private Sub MenuEditClear_Click()
+    Output = ""
     TextOutput.Text = ""
 End Sub
 
@@ -94,6 +106,7 @@ End Sub
 
 ' Edit -> Select All Menu Click Event Handler
 Private Sub MenuEditSelectAll_Click()
+    On Error Resume Next
     TextOutput.SelStart = 0
     TextOutput.SelLength = Len(TextOutput.Text)
 End Sub
@@ -101,7 +114,7 @@ End Sub
 ' Output Textbox Change Event Handler
 Private Sub TextOutput_Change()
     ' Enable/Disable relevant menu items
-    If Len(TextOutput.Text) = 0 Then
+    If Len(Output) = 0 Then
         MenuEditCopy.Enabled = False
         MenuEditSelectAll.Enabled = False
     Else
